@@ -1,0 +1,1682 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Álbum Mundial FIFA 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════
+   VARIABLES & RESET
+═══════════════════════════════════════════════ */
+:root {
+  --bg: #080e1a;
+  --bg2: #0d1525;
+  --bg3: #111d35;
+  --surface: rgba(255,255,255,0.05);
+  --surface2: rgba(255,255,255,0.08);
+  --border: rgba(255,255,255,0.1);
+  --gold: #f0b429;
+  --gold2: #ffd166;
+  --blue: #1a4fbd;
+  --blue2: #2563eb;
+  --red: #e53e3e;
+  --green: #22c55e;
+  --text: #f0f4ff;
+  --text2: rgba(240,244,255,0.6);
+  --text3: rgba(240,244,255,0.35);
+  --missing: rgba(255,255,255,0.08);
+  --missing-border: rgba(255,255,255,0.12);
+  --got: rgba(240,180,41,0.15);
+  --got-border: rgba(240,180,41,0.5);
+  --extra: rgba(34,197,94,0.15);
+  --extra-border: rgba(34,197,94,0.5);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow: 0 4px 20px rgba(0,0,0,0.4);
+  --transition: 0.15s ease;
+  --font-display: 'Bebas Neue', sans-serif;
+  --font-body: 'Nunito', sans-serif;
+}
+.light-mode {
+  --bg: #eef2ff;
+  --bg2: #e4eaf8;
+  --bg3: #dce5f5;
+  --surface: rgba(0,0,0,0.04);
+  --surface2: rgba(0,0,0,0.07);
+  --border: rgba(0,0,0,0.1);
+  --text: #0d1525;
+  --text2: rgba(13,21,37,0.6);
+  --text3: rgba(13,21,37,0.35);
+  --missing: rgba(0,0,0,0.06);
+  --missing-border: rgba(0,0,0,0.12);
+  --got: rgba(240,180,41,0.18);
+  --got-border: rgba(210,140,10,0.5);
+  --extra: rgba(34,197,94,0.18);
+  --extra-border: rgba(20,150,60,0.5);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.4;
+  transition: background 0.3s, color 0.3s;
+}
+button { font-family: var(--font-body); border: none; cursor: pointer; }
+input { font-family: var(--font-body); }
+::selection { background: var(--gold); color: #000; }
+
+/* ═══════════════════════════════════════════════
+   LOADING SCREEN
+═══════════════════════════════════════════════ */
+#loading-screen {
+  position: fixed; inset: 0; z-index: 999;
+  background: linear-gradient(160deg, #080e1a 0%, #0d1a3a 50%, #1a0a08 100%);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px;
+}
+.loading-trophy { font-size: 64px; animation: trophy-bounce 1s ease-in-out infinite alternate; }
+@keyframes trophy-bounce { from { transform: scale(0.9) translateY(4px); } to { transform: scale(1.05) translateY(-4px); } }
+.loading-title { font-family: var(--font-display); font-size: 32px; color: var(--gold); letter-spacing: 4px; }
+.loading-sub { font-size: 12px; color: var(--text2); letter-spacing: 2px; text-transform: uppercase; }
+.loading-bar-wrap { width: 160px; height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
+.loading-bar { height: 100%; background: linear-gradient(90deg, var(--gold), var(--gold2)); animation: load-progress 1.5s ease-out forwards; }
+@keyframes load-progress { from { width: 0 } to { width: 100% } }
+
+/* ═══════════════════════════════════════════════
+   LOGIN SCREEN
+═══════════════════════════════════════════════ */
+#login-screen {
+  position: fixed; inset: 0; z-index: 100;
+  background: linear-gradient(160deg, #080e1a 0%, #0d1a3a 50%, #1a0a08 100%);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px;
+  gap: 0;
+}
+.login-bg-dots {
+  position: absolute; inset: 0; pointer-events: none; overflow: hidden;
+}
+.login-bg-dots::before, .login-bg-dots::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.15;
+}
+.login-bg-dots::before { width: 300px; height: 300px; background: var(--blue2); top: -50px; right: -80px; }
+.login-bg-dots::after { width: 250px; height: 250px; background: var(--gold); bottom: -60px; left: -60px; }
+
+.login-card {
+  width: 100%; max-width: 360px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px;
+  padding: 32px 24px;
+  backdrop-filter: blur(20px);
+  text-align: center;
+  position: relative; z-index: 1;
+}
+.login-logo { font-size: 56px; margin-bottom: 8px; }
+.login-title { font-family: var(--font-display); font-size: 28px; color: var(--gold); letter-spacing: 3px; margin-bottom: 4px; }
+.login-sub { font-size: 11px; color: var(--text2); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 28px; }
+.login-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; text-align: left; }
+.login-input {
+  width: 100%; padding: 14px 16px;
+  background: rgba(255,255,255,0.06);
+  border: 1.5px solid rgba(255,255,255,0.12);
+  border-radius: var(--radius);
+  color: var(--text); font-size: 16px;
+  outline: none; margin-bottom: 16px;
+  transition: border-color 0.2s;
+  text-align: center; letter-spacing: 3px;
+}
+.login-input:focus { border-color: var(--gold); }
+.login-input::placeholder { letter-spacing: 1px; color: var(--text3); }
+.login-btn {
+  width: 100%; padding: 15px;
+  background: linear-gradient(135deg, var(--blue2), var(--blue));
+  border-radius: var(--radius);
+  color: #fff; font-size: 15px; font-weight: 700;
+  letter-spacing: 1px; text-transform: uppercase;
+  transition: transform 0.1s, box-shadow 0.2s;
+  box-shadow: 0 4px 20px rgba(37,99,235,0.4);
+  margin-bottom: 12px;
+}
+.login-btn:active { transform: scale(0.97); }
+.login-hint { font-size: 11px; color: var(--text3); line-height: 1.6; }
+.login-error { font-size: 12px; color: var(--red); margin-bottom: 12px; min-height: 16px; }
+
+/* ═══════════════════════════════════════════════
+   MAIN APP
+═══════════════════════════════════════════════ */
+#app {
+  position: fixed; inset: 0;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.hidden { display: none !important; }
+
+/* ═══════════════════════════════════════════════
+   HEADER
+═══════════════════════════════════════════════ */
+.header {
+  background: linear-gradient(135deg, var(--bg2), var(--bg3));
+  border-bottom: 1px solid var(--border);
+  padding: 10px 12px 8px;
+  flex-shrink: 0;
+  position: relative; z-index: 10;
+}
+.header-top {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+}
+.header-title {
+  font-family: var(--font-display);
+  font-size: 20px; color: var(--gold); letter-spacing: 2px; flex: 1;
+  line-height: 1;
+}
+.header-album {
+  font-size: 10px; color: var(--text3); letter-spacing: 1px;
+  text-transform: uppercase; display: block; margin-top: 1px;
+}
+.header-btn {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: var(--surface); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; color: var(--text); flex-shrink: 0;
+  transition: background 0.15s;
+}
+.header-btn:active { background: var(--surface2); }
+
+.search-bar {
+  position: relative;
+}
+.search-input {
+  width: 100%; padding: 9px 36px 9px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text); font-size: 13px;
+  outline: none; transition: border-color 0.2s;
+}
+.search-input:focus { border-color: var(--gold); }
+.search-input::placeholder { color: var(--text3); }
+.search-clear {
+  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+  background: none; color: var(--text3); font-size: 16px; padding: 4px;
+  line-height: 1;
+}
+
+/* ═══════════════════════════════════════════════
+   CONTENT AREA
+═══════════════════════════════════════════════ */
+.content {
+  flex: 1; overflow-y: auto; overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.1) transparent;
+}
+.content::-webkit-scrollbar { width: 3px; }
+.content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+/* ═══════════════════════════════════════════════
+   PROGRESS BAR GLOBAL
+═══════════════════════════════════════════════ */
+.global-progress {
+  padding: 8px 12px 4px;
+  display: flex; align-items: center; gap: 8px;
+  flex-shrink: 0;
+}
+.global-progress-bar {
+  flex: 1; height: 4px; background: var(--surface2);
+  border-radius: 2px; overflow: hidden;
+}
+.global-progress-fill {
+  height: 100%; background: linear-gradient(90deg, var(--blue2), var(--gold));
+  border-radius: 2px; transition: width 0.4s ease;
+}
+.global-progress-text { font-size: 11px; color: var(--gold); font-weight: 700; white-space: nowrap; }
+
+/* ═══════════════════════════════════════════════
+   GROUPS LIST
+═══════════════════════════════════════════════ */
+.groups-list { padding: 4px 0 16px; }
+.group-section { border-bottom: 1px solid var(--border); }
+.group-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; cursor: pointer;
+  background: var(--bg2);
+  user-select: none;
+  transition: background 0.15s;
+}
+.group-header:active { background: var(--bg3); }
+.group-letter {
+  font-family: var(--font-display); font-size: 20px;
+  color: var(--gold); width: 24px; text-align: center; flex-shrink: 0;
+}
+.group-name { font-size: 13px; font-weight: 700; color: var(--text); flex: 1; letter-spacing: 0.5px; }
+.group-progress { font-size: 11px; color: var(--text2); }
+.group-arrow { font-size: 12px; color: var(--text3); transition: transform 0.2s; }
+.group-section.open .group-arrow { transform: rotate(90deg); }
+
+.group-countries { display: none; }
+.group-section.open .group-countries { display: block; }
+
+/* ═══════════════════════════════════════════════
+   COUNTRY ROW
+═══════════════════════════════════════════════ */
+.country-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 12px 7px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  cursor: pointer; transition: background 0.15s;
+  position: relative;
+}
+.country-row:active { background: var(--surface); }
+.country-flag { font-size: 22px; flex-shrink: 0; line-height: 1; }
+.country-info { flex: 1; min-width: 0; }
+.country-name { font-size: 13px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.country-meta { font-size: 10px; color: var(--text3); }
+.country-mini-progress {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex-shrink: 0;
+}
+.country-mini-bar {
+  width: 48px; height: 3px; background: var(--surface2); border-radius: 2px; overflow: hidden;
+}
+.country-mini-fill {
+  height: 100%; background: var(--gold); border-radius: 2px; transition: width 0.3s ease;
+}
+.country-mini-text { font-size: 10px; color: var(--text3); }
+.country-chevron { font-size: 11px; color: var(--text3); flex-shrink: 0; }
+
+/* ═══════════════════════════════════════════════
+   TEAM PANEL (slide in from right)
+═══════════════════════════════════════════════ */
+#team-panel {
+  position: fixed; inset: 0; z-index: 50;
+  background: var(--bg);
+  transform: translateX(100%);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex; flex-direction: column;
+}
+#team-panel.open { transform: translateX(0); }
+
+.team-header {
+  background: linear-gradient(135deg, var(--blue) 0%, var(--bg3) 100%);
+  padding: 12px 12px 10px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.team-header-top {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
+}
+.team-back-btn {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: rgba(255,255,255,0.1);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; color: var(--text); flex-shrink: 0;
+  transition: background 0.15s;
+}
+.team-back-btn:active { background: rgba(255,255,255,0.18); }
+.team-flag-big { font-size: 32px; line-height: 1; }
+.team-title-wrap { flex: 1; min-width: 0; }
+.team-name { font-family: var(--font-display); font-size: 22px; color: var(--text); letter-spacing: 1px; line-height: 1; }
+.team-sub { font-size: 10px; color: rgba(255,255,255,0.5); letter-spacing: 1px; text-transform: uppercase; }
+.team-progress-row {
+  display: flex; align-items: center; gap: 8px;
+}
+.team-progress-bar {
+  flex: 1; height: 5px; background: rgba(255,255,255,0.15); border-radius: 3px; overflow: hidden;
+}
+.team-progress-fill {
+  height: 100%; background: linear-gradient(90deg, var(--gold), var(--gold2));
+  border-radius: 3px; transition: width 0.4s ease;
+}
+.team-stats-row {
+  display: flex; gap: 16px; margin-top: 6px;
+}
+.team-stat { font-size: 10px; color: rgba(255,255,255,0.6); }
+.team-stat span { color: var(--text); font-weight: 700; }
+
+/* ═══════════════════════════════════════════════
+   STICKERS GRID
+═══════════════════════════════════════════════ */
+.stickers-container {
+  flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  padding: 8px;
+}
+.stickers-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 5px;
+}
+
+/* ── Single sticker card ── */
+.sticker {
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--missing-border);
+  background: var(--missing);
+  display: flex; flex-direction: column; align-items: center;
+  padding: 4px 2px 4px;
+  transition: border-color 0.2s, background 0.2s, transform 0.1s;
+  position: relative; overflow: hidden;
+  touch-action: manipulation;
+}
+.sticker.got {
+  border-color: var(--got-border);
+  background: var(--got);
+}
+.sticker.extra {
+  border-color: var(--extra-border);
+  background: var(--extra);
+}
+.sticker.got::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at 50% 0%, rgba(240,180,41,0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+.sticker.extra::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at 50% 0%, rgba(34,197,94,0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.sticker-num {
+  font-family: var(--font-display);
+  font-size: 15px;
+  line-height: 1;
+  color: var(--text3);
+  margin-bottom: 3px;
+  transition: color 0.2s;
+  letter-spacing: 0.5px;
+}
+.sticker.got .sticker-num { color: var(--gold); }
+.sticker.extra .sticker-num { color: var(--green); }
+
+.sticker-shield { font-size: 10px; color: var(--text3); margin-bottom: 2px; line-height: 1; }
+.sticker.got .sticker-shield { color: var(--gold2); opacity: 0.7; }
+
+.sticker-count {
+  font-size: 10px; font-weight: 700; color: var(--text3); min-height: 12px;
+  line-height: 1; margin-bottom: 3px;
+}
+.sticker.got .sticker-count { color: var(--text2); }
+.sticker.extra .sticker-count { color: var(--green); }
+
+.sticker-btns {
+  display: flex; gap: 3px; width: 100%;
+}
+.sticker-btn {
+  flex: 1; height: 22px; border-radius: 5px;
+  font-size: 14px; font-weight: 900; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.08s, opacity 0.08s;
+  touch-action: manipulation;
+}
+.sticker-btn:active { transform: scale(0.88); }
+.btn-plus {
+  background: rgba(37,99,235,0.25);
+  color: var(--blue2);
+  border: 1px solid rgba(37,99,235,0.3);
+}
+.sticker.got .btn-plus, .sticker.extra .btn-plus {
+  background: rgba(240,180,41,0.2);
+  color: var(--gold);
+  border-color: rgba(240,180,41,0.3);
+}
+.btn-minus {
+  background: rgba(229,62,62,0.15);
+  color: rgba(229,62,62,0.7);
+  border: 1px solid rgba(229,62,62,0.2);
+}
+.btn-minus:disabled { opacity: 0.3; pointer-events: none; }
+
+/* pulse on increment */
+@keyframes sticker-pulse {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
+.sticker.pulse { animation: sticker-pulse 0.2s ease; }
+
+/* ═══════════════════════════════════════════════
+   MENU (bottom sheet style)
+═══════════════════════════════════════════════ */
+#menu-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(4px);
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.2s;
+}
+#menu-overlay.open { opacity: 1; pointer-events: all; }
+#menu-sheet {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 201;
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+  border-radius: 20px 20px 0 0;
+  padding: 16px 0 32px;
+  transform: translateY(100%);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+#menu-sheet.open { transform: translateY(0); }
+.menu-handle {
+  width: 40px; height: 4px; background: var(--border);
+  border-radius: 2px; margin: 0 auto 16px;
+}
+.menu-title { font-size: 11px; color: var(--text3); letter-spacing: 2px; text-transform: uppercase; padding: 0 20px 8px; }
+.menu-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 20px; cursor: pointer;
+  transition: background 0.15s;
+}
+.menu-item:active { background: var(--surface); }
+.menu-icon { font-size: 22px; width: 28px; text-align: center; }
+.menu-label { font-size: 15px; font-weight: 600; color: var(--text); }
+.menu-divider { height: 1px; background: var(--border); margin: 4px 0; }
+.menu-item-toggle { display: flex; align-items: center; justify-content: space-between; width: 100%; }
+.toggle-switch {
+  width: 40px; height: 22px; background: var(--surface2);
+  border-radius: 11px; position: relative;
+  transition: background 0.2s;
+}
+.toggle-switch.on { background: var(--gold); }
+.toggle-knob {
+  position: absolute; top: 3px; left: 3px;
+  width: 16px; height: 16px; background: white;
+  border-radius: 50%; transition: left 0.2s;
+}
+.toggle-switch.on .toggle-knob { left: 21px; }
+
+/* ═══════════════════════════════════════════════
+   STATS PANEL
+═══════════════════════════════════════════════ */
+#stats-panel {
+  position: fixed; inset: 0; z-index: 150;
+  background: var(--bg);
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex; flex-direction: column;
+}
+#stats-panel.open { transform: translateY(0); }
+
+.stats-header {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 14px;
+  display: flex; align-items: center; gap: 10px;
+  flex-shrink: 0;
+}
+.stats-close {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: var(--surface);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; color: var(--text);
+}
+.stats-title { font-family: var(--font-display); font-size: 22px; color: var(--gold); letter-spacing: 2px; }
+
+.stats-body { flex: 1; overflow-y: auto; padding: 12px; gap: 12px; display: flex; flex-direction: column; }
+
+.stats-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+}
+.stats-card-title { font-size: 11px; color: var(--text3); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; }
+
+.stats-big-num { font-family: var(--font-display); font-size: 48px; color: var(--gold); line-height: 1; }
+.stats-big-label { font-size: 12px; color: var(--text2); margin-top: 2px; }
+
+.stats-row4 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.stat-bubble {
+  background: var(--surface2); border-radius: var(--radius-sm);
+  padding: 10px; text-align: center;
+}
+.stat-bubble-num { font-family: var(--font-display); font-size: 28px; line-height: 1; }
+.stat-bubble-label { font-size: 10px; color: var(--text3); margin-top: 2px; }
+.stat-bubble.gold .stat-bubble-num { color: var(--gold); }
+.stat-bubble.green .stat-bubble-num { color: var(--green); }
+.stat-bubble.red .stat-bubble-num { color: var(--red); }
+.stat-bubble.blue .stat-bubble-num { color: var(--blue2); }
+
+.stats-group-row {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+}
+.stats-group-letter { font-family: var(--font-display); font-size: 16px; color: var(--gold); width: 20px; }
+.stats-group-bar { flex: 1; height: 4px; background: var(--surface2); border-radius: 2px; overflow: hidden; }
+.stats-group-fill { height: 100%; background: linear-gradient(90deg, var(--blue2), var(--gold)); border-radius: 2px; }
+.stats-group-pct { font-size: 11px; color: var(--text2); width: 34px; text-align: right; }
+
+.country-stats-table { display: flex; flex-direction: column; gap: 10px; }
+.cst-row { }
+.cst-name { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 3px; display: flex; align-items: center; gap: 6px; }
+.cst-stickers { display: flex; flex-wrap: wrap; gap: 3px; }
+.cst-chip {
+  font-size: 10px; padding: 2px 6px; border-radius: 4px;
+  background: var(--got); border: 1px solid var(--got-border);
+  color: var(--gold); font-weight: 700;
+}
+.cst-chip.extra {
+  background: var(--extra); border-color: var(--extra-border);
+  color: var(--green);
+}
+.cst-empty { font-size: 11px; color: var(--text3); font-style: italic; }
+
+/* ═══════════════════════════════════════════════
+   PAGE SEARCH PANEL
+═══════════════════════════════════════════════ */
+#page-panel {
+  position: fixed; inset: 0; z-index: 150;
+  background: var(--bg);
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex; flex-direction: column;
+}
+#page-panel.open { transform: translateY(0); }
+.page-header {
+  background: var(--bg2); border-bottom: 1px solid var(--border);
+  padding: 12px 14px; display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+}
+.page-title { font-family: var(--font-display); font-size: 22px; color: var(--gold); letter-spacing: 2px; flex: 1; }
+.page-body { flex: 1; overflow-y: auto; padding: 14px; }
+.page-search-wrap { margin-bottom: 14px; }
+.page-search-input {
+  width: 100%; padding: 12px 14px;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text); font-size: 15px; outline: none;
+  transition: border-color 0.2s;
+}
+.page-search-input:focus { border-color: var(--gold); }
+#page-results { display: flex; flex-direction: column; gap: 8px; }
+.page-result {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  display: flex; align-items: center; gap: 12px; cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.page-result:active { background: var(--surface2); border-color: var(--gold); }
+.page-result-flag { font-size: 28px; }
+.page-result-info { flex: 1; }
+.page-result-name { font-size: 14px; font-weight: 700; }
+.page-result-page { font-size: 11px; color: var(--text3); }
+.page-result-arrow { font-size: 18px; color: var(--gold); }
+
+/* ═══════════════════════════════════════════════
+   SEARCH RESULTS OVERLAY
+═══════════════════════════════════════════════ */
+#search-results {
+  position: absolute; top: 100%; left: 0; right: 0;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  z-index: 20; max-height: 60vh;
+  overflow-y: auto; display: none;
+}
+#search-results.show { display: block; }
+.search-result-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 14px; cursor: pointer;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  transition: background 0.15s;
+}
+.search-result-item:active { background: var(--surface); }
+.sr-flag { font-size: 22px; }
+.sr-info { flex: 1; }
+.sr-name { font-size: 13px; font-weight: 700; }
+.sr-code { font-size: 10px; color: var(--text3); }
+
+/* ═══════════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════════ */
+#toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(60px);
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 20px; padding: 8px 18px;
+  font-size: 12px; color: var(--text2);
+  z-index: 999; transition: transform 0.2s ease, opacity 0.2s ease;
+  opacity: 0; white-space: nowrap; pointer-events: none;
+}
+#toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+/* ═══════════════════════════════════════════════
+   SYNC INDICATOR
+═══════════════════════════════════════════════ */
+.sync-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--green); flex-shrink: 0;
+  box-shadow: 0 0 6px var(--green);
+}
+.sync-dot.syncing { background: var(--gold); box-shadow: 0 0 6px var(--gold); animation: pulse-dot 0.6s ease-in-out infinite alternate; }
+.sync-dot.error { background: var(--red); box-shadow: 0 0 6px var(--red); }
+@keyframes pulse-dot { from { opacity: 0.5; } to { opacity: 1; } }
+
+/* ═══════════════════════════════════════════════
+   MISC
+═══════════════════════════════════════════════ */
+.db-config-bar {
+  background: rgba(240,180,41,0.1);
+  border-bottom: 1px solid rgba(240,180,41,0.2);
+  padding: 6px 12px;
+  display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+}
+.db-config-label { font-size: 10px; color: var(--gold); flex: 1; }
+.db-config-btn {
+  font-size: 10px; color: var(--gold); background: rgba(240,180,41,0.15);
+  border: 1px solid rgba(240,180,41,0.3); border-radius: 6px; padding: 3px 8px;
+}
+
+/* DB Config Modal */
+#db-modal {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(0,0,0,0.7); backdrop-filter: blur(6px);
+  display: flex; align-items: flex-end; justify-content: center;
+}
+#db-modal.hidden { display: none; }
+.db-modal-sheet {
+  background: var(--bg2); border-radius: 20px 20px 0 0;
+  border-top: 1px solid var(--border);
+  padding: 24px 20px 40px; width: 100%;
+}
+.db-modal-title { font-family: var(--font-display); font-size: 20px; color: var(--gold); margin-bottom: 6px; letter-spacing: 1px; }
+.db-modal-sub { font-size: 12px; color: var(--text2); margin-bottom: 16px; line-height: 1.6; }
+.db-modal-input {
+  width: 100%; padding: 12px 14px;
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: var(--radius); color: var(--text); font-size: 13px;
+  outline: none; margin-bottom: 12px; transition: border-color 0.2s;
+}
+.db-modal-input:focus { border-color: var(--gold); }
+.db-modal-btn {
+  width: 100%; padding: 14px;
+  background: linear-gradient(135deg, var(--blue2), var(--blue));
+  border-radius: var(--radius); color: #fff; font-size: 15px;
+  font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+  box-shadow: 0 4px 20px rgba(37,99,235,0.35);
+}
+.db-modal-skip {
+  width: 100%; padding: 12px; text-align: center;
+  font-size: 13px; color: var(--text3); margin-top: 8px; background: none;
+}
+.db-info { font-size: 11px; color: var(--text3); line-height: 1.6; margin-top: 8px; }
+code { background: var(--surface2); padding: 2px 6px; border-radius: 4px; font-size: 10px; color: var(--gold); }
+
+/* Responsive tweaks for bigger screens */
+@media (min-width: 400px) {
+  .stickers-grid { grid-template-columns: repeat(5, 1fr); gap: 6px; }
+}
+@media (min-width: 600px) {
+  .stickers-grid { grid-template-columns: repeat(7, 1fr); }
+  #app { max-width: 480px; margin: 0 auto; border-left: 1px solid var(--border); border-right: 1px solid var(--border); }
+  #team-panel, #stats-panel, #page-panel { max-width: 480px; left: 50%; right: auto; transform: translateX(-50%) translateX(100%); }
+  #team-panel.open { transform: translateX(-50%) translateX(0); }
+  #stats-panel.open, #page-panel.open { transform: translateX(-50%) translateY(0); }
+  #stats-panel, #page-panel { left: 50%; right: auto; transform: translateX(-50%) translateY(100%); width: 480px; }
+  #menu-sheet { max-width: 480px; left: 50%; transform: translateX(-50%) translateY(100%); right: auto; }
+  #menu-sheet.open { transform: translateX(-50%) translateY(0); }
+}
+</style>
+</head>
+<body>
+
+<!-- Loading Screen -->
+<div id="loading-screen">
+  <div class="loading-trophy">🏆</div>
+  <div class="loading-title">FIFA 2026</div>
+  <div class="loading-sub">Álbum Oficial</div>
+  <div class="loading-bar-wrap"><div class="loading-bar"></div></div>
+</div>
+
+<!-- Login Screen -->
+<div id="login-screen" class="hidden">
+  <div class="login-bg-dots"></div>
+  <div class="login-card">
+    <div class="login-logo">🏆</div>
+    <div class="login-title">FIFA 2026</div>
+    <div class="login-sub">Álbum Virtual de Figuritas</div>
+    <div class="login-label">Contraseña del álbum</div>
+    <input class="login-input" id="login-input" type="text" placeholder="mi-album-secreto" maxlength="50" autocomplete="off" autocorrect="off" spellcheck="false">
+    <div class="login-error" id="login-error"></div>
+    <button class="login-btn" id="login-btn">Entrar al Álbum</button>
+    <div class="login-hint">
+      Ingresá una contraseña para entrar a tu álbum.<br>Si no existe, se crea automáticamente.<br>Compartí la contraseña con amigos para colaborar.
+    </div>
+  </div>
+</div>
+
+<!-- DB Config Modal -->
+<div id="db-modal" class="hidden">
+  <div class="db-modal-sheet">
+    <div class="db-modal-title">Configurar Base de Datos</div>
+    <div class="db-modal-sub">
+      Para sincronizar entre dispositivos, conectá tu base de datos Neon. Si no tenés, el álbum funciona solo en este dispositivo (localStorage).
+    </div>
+    <input class="db-modal-input" id="db-url-input" type="text" placeholder="postgresql://usuario:clave@host.neon.tech/db" autocomplete="off" spellcheck="false">
+    <input class="db-modal-input" id="db-token-input" type="text" placeholder="Token de autenticación HTTP de Neon (opcional)" autocomplete="off" spellcheck="false">
+    <div class="db-info">
+      Obtené tu URL en <code>console.neon.tech</code> → tu proyecto → Connection Details.<br>
+      El token se obtiene en API Keys del proyecto Neon.
+    </div>
+    <button class="db-modal-btn" id="db-save-btn">Guardar y conectar</button>
+    <button class="db-modal-skip" id="db-skip-btn">Usar solo en este dispositivo (sin sincronización)</button>
+  </div>
+</div>
+
+<!-- Main App -->
+<div id="app" class="hidden">
+  <!-- DB config bar (shown if no DB configured) -->
+  <div class="db-config-bar hidden" id="db-config-bar">
+    <span class="db-config-label">⚠️ Sin sincronización — solo local</span>
+    <button class="db-config-btn" id="db-config-btn-open">Configurar BD</button>
+  </div>
+
+  <!-- Header -->
+  <div class="header" style="position:relative">
+    <div class="header-top">
+      <div>
+        <div class="header-title">🏆 FIFA 2026</div>
+        <span class="header-album" id="header-album-name"></span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;margin-left:auto">
+        <div class="sync-dot" id="sync-dot"></div>
+        <button class="header-btn" id="menu-btn">⋯</button>
+      </div>
+    </div>
+    <div class="search-bar">
+      <input class="search-input" id="search-input" type="search" placeholder="🔍  Buscar país o abreviatura..." autocomplete="off">
+      <button class="search-clear hidden" id="search-clear">✕</button>
+    </div>
+    <div id="search-results"></div>
+  </div>
+
+  <!-- Global progress -->
+  <div class="global-progress">
+    <div class="global-progress-bar">
+      <div class="global-progress-fill" id="global-progress-fill" style="width:0%"></div>
+    </div>
+    <div class="global-progress-text" id="global-progress-text">0%</div>
+  </div>
+
+  <!-- Content -->
+  <div class="content" id="groups-content">
+    <div class="groups-list" id="groups-list"></div>
+  </div>
+</div>
+
+<!-- Team Panel -->
+<div id="team-panel">
+  <div class="team-header">
+    <div class="team-header-top">
+      <button class="team-back-btn" id="team-back">‹</button>
+      <div class="team-flag-big" id="team-flag"></div>
+      <div class="team-title-wrap">
+        <div class="team-name" id="team-name"></div>
+        <div class="team-sub" id="team-sub"></div>
+      </div>
+    </div>
+    <div class="team-progress-row">
+      <div class="team-progress-bar">
+        <div class="team-progress-fill" id="team-progress-fill" style="width:0%"></div>
+      </div>
+      <div class="global-progress-text" id="team-progress-text">0%</div>
+    </div>
+    <div class="team-stats-row">
+      <div class="team-stat">Obtenidas: <span id="ts-got">0</span></div>
+      <div class="team-stat">Faltantes: <span id="ts-missing">0</span></div>
+      <div class="team-stat">Repetidas: <span id="ts-extra">0</span></div>
+    </div>
+  </div>
+  <div class="stickers-container">
+    <div class="stickers-grid" id="stickers-grid"></div>
+  </div>
+</div>
+
+<!-- Stats Panel -->
+<div id="stats-panel">
+  <div class="stats-header">
+    <button class="stats-close" id="stats-close">‹</button>
+    <div class="stats-title">Estadísticas</div>
+  </div>
+  <div class="stats-body" id="stats-body"></div>
+</div>
+
+<!-- Page Search Panel -->
+<div id="page-panel">
+  <div class="page-header">
+    <button class="stats-close" id="page-close">‹</button>
+    <div class="page-title">Buscar Página</div>
+  </div>
+  <div class="page-body">
+    <div class="page-search-wrap">
+      <input class="page-search-input" id="page-search-input" type="search" placeholder="Escribí un país..." autocomplete="off">
+    </div>
+    <div id="page-results"></div>
+  </div>
+</div>
+
+<!-- Menu overlay + sheet -->
+<div id="menu-overlay"></div>
+<div id="menu-sheet">
+  <div class="menu-handle"></div>
+  <div class="menu-title">Opciones</div>
+  <div class="menu-item" id="menu-stats">
+    <span class="menu-icon">📊</span>
+    <span class="menu-label">Estadísticas</span>
+  </div>
+  <div class="menu-item" id="menu-page">
+    <span class="menu-icon">📖</span>
+    <span class="menu-label">Buscar página del álbum</span>
+  </div>
+  <div class="menu-divider"></div>
+  <div class="menu-item" id="menu-darkmode">
+    <span class="menu-icon">🌙</span>
+    <div class="menu-item-toggle">
+      <span class="menu-label">Modo oscuro</span>
+      <div class="toggle-switch on" id="dark-toggle"><div class="toggle-knob"></div></div>
+    </div>
+  </div>
+  <div class="menu-divider"></div>
+  <div class="menu-item" id="menu-logout">
+    <span class="menu-icon">🚪</span>
+    <span class="menu-label">Cambiar álbum</span>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+/* ═══════════════════════════════════════════════
+   DATA
+═══════════════════════════════════════════════ */
+const GROUPS = [
+  { id:'A', countries:[
+    {name:'México', code:'MEX', flag:'🇲🇽', page:8},
+    {name:'Sudáfrica', code:'RSA', flag:'🇿🇦', page:10},
+    {name:'Corea del Sur', code:'KOR', flag:'🇰🇷', page:12},
+    {name:'Chequia', code:'CZE', flag:'🇨🇿', page:14},
+  ]},
+  { id:'B', countries:[
+    {name:'Canadá', code:'CAN', flag:'🇨🇦', page:16},
+    {name:'Bosnia-Herzegovina', code:'BIH', flag:'🇧🇦', page:18},
+    {name:'Qatar', code:'QAT', flag:'🇶🇦', page:20},
+    {name:'Suiza', code:'SUI', flag:'🇨🇭', page:22},
+  ]},
+  { id:'C', countries:[
+    {name:'Brasil', code:'BRA', flag:'🇧🇷', page:24},
+    {name:'Marruecos', code:'MAR', flag:'🇲🇦', page:26},
+    {name:'Haití', code:'HAI', flag:'🇭🇹', page:28},
+    {name:'Escocia', code:'SCO', flag:'🏴󠁧󠁢󠁳󠁣󠁴󠁿', page:30},
+  ]},
+  { id:'D', countries:[
+    {name:'EE.UU.', code:'USA', flag:'🇺🇸', page:32},
+    {name:'Paraguay', code:'PAR', flag:'🇵🇾', page:34},
+    {name:'Australia', code:'AUS', flag:'🇦🇺', page:36},
+    {name:'Türkiye', code:'TUR', flag:'🇹🇷', page:38},
+  ]},
+  { id:'E', countries:[
+    {name:'Alemania', code:'GER', flag:'🇩🇪', page:40},
+    {name:'Curaçao', code:'CUW', flag:'🇨🇼', page:42},
+    {name:"Costa de Marfil", code:'CIV', flag:'🇨🇮', page:44},
+    {name:'Ecuador', code:'ECU', flag:'🇪🇨', page:46},
+  ]},
+  { id:'F', countries:[
+    {name:'Países Bajos', code:'NED', flag:'🇳🇱', page:48},
+    {name:'Japón', code:'JPN', flag:'🇯🇵', page:50},
+    {name:'Suecia', code:'SWE', flag:'🇸🇪', page:52},
+    {name:'Túnez', code:'TUN', flag:'🇹🇳', page:54},
+  ]},
+  { id:'G', countries:[
+    {name:'Bélgica', code:'BEL', flag:'🇧🇪', page:58},
+    {name:'Egipto', code:'EGY', flag:'🇪🇬', page:60},
+    {name:'Irán', code:'IRN', flag:'🇮🇷', page:62},
+    {name:'Nueva Zelanda', code:'NZL', flag:'🇳🇿', page:64},
+  ]},
+  { id:'H', countries:[
+    {name:'España', code:'ESP', flag:'🇪🇸', page:66},
+    {name:'Cabo Verde', code:'CPV', flag:'🇨🇻', page:68},
+    {name:'Arabia Saudita', code:'KSA', flag:'🇸🇦', page:70},
+    {name:'Uruguay', code:'URU', flag:'🇺🇾', page:72},
+  ]},
+  { id:'I', countries:[
+    {name:'Francia', code:'FRA', flag:'🇫🇷', page:74},
+    {name:'Senegal', code:'SEN', flag:'🇸🇳', page:76},
+    {name:'Irak', code:'IRQ', flag:'🇮🇶', page:78},
+    {name:'Noruega', code:'NOR', flag:'🇳🇴', page:80},
+  ]},
+  { id:'J', countries:[
+    {name:'Argentina', code:'ARG', flag:'🇦🇷', page:82},
+    {name:'Argelia', code:'ALG', flag:'🇩🇿', page:84},
+    {name:'Austria', code:'AUT', flag:'🇦🇹', page:86},
+    {name:'Jordania', code:'JOR', flag:'🇯🇴', page:88},
+  ]},
+  { id:'K', countries:[
+    {name:'Portugal', code:'POR', flag:'🇵🇹', page:90},
+    {name:'Congo RD', code:'COD', flag:'🇨🇩', page:92},
+    {name:'Uzbekistán', code:'UZB', flag:'🇺🇿', page:94},
+    {name:'Colombia', code:'COL', flag:'🇨🇴', page:96},
+  ]},
+  { id:'L', countries:[
+    {name:'Inglaterra', code:'ENG', flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', page:98},
+    {name:'Croacia', code:'CRO', flag:'🇭🇷', page:100},
+    {name:'Ghana', code:'GHA', flag:'🇬🇭', page:102},
+    {name:'Panamá', code:'PAN', flag:'🇵🇦', page:104},
+  ]},
+];
+
+const ALL_COUNTRIES = GROUPS.flatMap(g => g.countries.map(c => ({...c, group: g.id})));
+
+// Sticker count per team: 1 escudo + 19 jugadores = 20
+const STICKER_COUNT = 20;
+
+/* ═══════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════ */
+let albumPassword = '';
+let stickerData = {}; // { 'MEX': [0,0,...20 items], 'BRA': [...] }
+let darkMode = true;
+let currentCountryCode = null;
+let dbConfig = null; // { url, token }
+let syncTimeout = null;
+let isSyncing = false;
+
+/* ═══════════════════════════════════════════════
+   LOCAL STORAGE HELPERS
+═══════════════════════════════════════════════ */
+function lsKey(pw) { return `album2026_${pw}`; }
+function saveLocal() {
+  localStorage.setItem(lsKey(albumPassword), JSON.stringify(stickerData));
+}
+function loadLocal(pw) {
+  const raw = localStorage.getItem(lsKey(pw));
+  return raw ? JSON.parse(raw) : null;
+}
+
+/* ═══════════════════════════════════════════════
+   DB (Neon HTTP)
+═══════════════════════════════════════════════ */
+function getDbConfig() {
+  const raw = localStorage.getItem('album2026_db');
+  return raw ? JSON.parse(raw) : null;
+}
+function saveDbConfig(cfg) {
+  localStorage.setItem('album2026_db', JSON.stringify(cfg));
+}
+
+async function dbQuery(sql, params=[]) {
+  if (!dbConfig) return null;
+  try {
+    const res = await fetch(dbConfig.url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(dbConfig.token ? {'Authorization': `Bearer ${dbConfig.token}`} : {}),
+        'Neon-Connection-String': dbConfig.connectionString || '',
+      },
+      body: JSON.stringify({ query: sql, params })
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch { return null; }
+}
+
+// We use Neon HTTP SQL endpoint: POST /sql
+// Format: { query: "...", params: [...] }
+async function dbInit() {
+  if (!dbConfig) return false;
+  const r = await dbQuery(
+    `CREATE TABLE IF NOT EXISTS albums (
+      password TEXT NOT NULL,
+      country_code TEXT NOT NULL,
+      stickers JSONB NOT NULL,
+      updated_at TIMESTAMPTZ DEFAULT now(),
+      PRIMARY KEY (password, country_code)
+    )`
+  );
+  return r !== null;
+}
+
+async function dbLoadAlbum(pw) {
+  const r = await dbQuery('SELECT country_code, stickers FROM albums WHERE password=$1', [pw]);
+  if (!r || !r.rows) return null;
+  const data = {};
+  for (const row of r.rows) {
+    data[row.country_code] = row.stickers;
+  }
+  return data;
+}
+
+async function dbSaveCountry(pw, code, arr) {
+  const r = await dbQuery(
+    `INSERT INTO albums (password, country_code, stickers, updated_at)
+     VALUES ($1, $2, $3::jsonb, now())
+     ON CONFLICT (password, country_code) DO UPDATE
+       SET stickers=$3::jsonb, updated_at=now()`,
+    [pw, code, JSON.stringify(arr)]
+  );
+  return r !== null;
+}
+
+/* ═══════════════════════════════════════════════
+   STICKER DATA HELPERS
+═══════════════════════════════════════════════ */
+function initCountry(code) {
+  if (!stickerData[code]) {
+    stickerData[code] = Array(STICKER_COUNT).fill(0);
+  }
+}
+function getCount(code, idx) {
+  initCountry(code);
+  return stickerData[code][idx] || 0;
+}
+function setCount(code, idx, val) {
+  initCountry(code);
+  stickerData[code][idx] = Math.max(0, val);
+}
+
+function countryStats(code) {
+  initCountry(code);
+  const arr = stickerData[code];
+  let got=0, missing=0, extra=0;
+  for (const c of arr) {
+    if (c===0) missing++;
+    else if (c===1) got++;
+    else { got++; extra += c-1; }
+  }
+  return { got, missing, extra, total: STICKER_COUNT };
+}
+
+function globalStats() {
+  let got=0, missing=0, extra=0, total=0;
+  for (const g of GROUPS) for (const c of g.countries) {
+    const s = countryStats(c.code);
+    got += s.got; missing += s.missing; extra += s.extra; total += s.total;
+  }
+  return { got, missing, extra, total };
+}
+
+/* ═══════════════════════════════════════════════
+   SYNC
+═══════════════════════════════════════════════ */
+function setSyncState(state) {
+  const dot = document.getElementById('sync-dot');
+  if (!dot) return;
+  dot.className = 'sync-dot';
+  if (state==='syncing') dot.classList.add('syncing');
+  if (state==='error') dot.classList.add('error');
+}
+
+async function syncCountry(code) {
+  if (!dbConfig) { saveLocal(); return; }
+  setSyncState('syncing');
+  const ok = await dbSaveCountry(albumPassword, code, stickerData[code]);
+  saveLocal();
+  setSyncState(ok ? '' : 'error');
+}
+
+function scheduleSyncCountry(code) {
+  saveLocal(); // always local first
+  if (!dbConfig) return;
+  clearTimeout(syncTimeout);
+  syncTimeout = setTimeout(() => syncCountry(code), 600);
+}
+
+/* ═══════════════════════════════════════════════
+   RENDER GROUPS LIST
+═══════════════════════════════════════════════ */
+function renderGroups() {
+  const list = document.getElementById('groups-list');
+  list.innerHTML = '';
+  for (const g of GROUPS) {
+    const section = document.createElement('div');
+    section.className = 'group-section';
+    section.dataset.group = g.id;
+
+    const header = document.createElement('div');
+    header.className = 'group-header';
+    header.innerHTML = `
+      <span class="group-letter">${g.id}</span>
+      <span class="group-name">Grupo ${g.id}</span>
+      <span class="group-progress" id="gp-${g.id}"></span>
+      <span class="group-arrow">›</span>
+    `;
+    header.addEventListener('click', () => {
+      section.classList.toggle('open');
+    });
+
+    const countries = document.createElement('div');
+    countries.className = 'group-countries';
+    for (const c of g.countries) {
+      countries.appendChild(renderCountryRow(c));
+    }
+
+    section.appendChild(header);
+    section.appendChild(countries);
+    list.appendChild(section);
+  }
+  updateGroupProgress();
+}
+
+function renderCountryRow(country) {
+  const row = document.createElement('div');
+  row.className = 'country-row';
+  row.dataset.code = country.code;
+  const s = countryStats(country.code);
+  const pct = Math.round((s.got / s.total) * 100);
+  row.innerHTML = `
+    <span class="country-flag">${country.flag}</span>
+    <div class="country-info">
+      <div class="country-name">${country.name}</div>
+      <div class="country-meta">${country.code} · Pág. ${country.page}</div>
+    </div>
+    <div class="country-mini-progress">
+      <div class="country-mini-bar"><div class="country-mini-fill" style="width:${pct}%"></div></div>
+      <div class="country-mini-text">${s.got}/${s.total}</div>
+    </div>
+    <span class="country-chevron">›</span>
+  `;
+  row.addEventListener('click', () => openTeam(country));
+  return row;
+}
+
+function updateGroupProgress() {
+  for (const g of GROUPS) {
+    let got=0, total=0;
+    for (const c of g.countries) {
+      const s = countryStats(c.code);
+      got += s.got; total += s.total;
+    }
+    const el = document.getElementById(`gp-${g.id}`);
+    if (el) el.textContent = `${got}/${total}`;
+  }
+  // Update country mini-bars
+  for (const g of GROUPS) for (const c of g.countries) {
+    const row = document.querySelector(`.country-row[data-code="${c.code}"]`);
+    if (!row) continue;
+    const s = countryStats(c.code);
+    const pct = Math.round((s.got / s.total) * 100);
+    const fill = row.querySelector('.country-mini-fill');
+    const txt = row.querySelector('.country-mini-text');
+    if (fill) fill.style.width = pct + '%';
+    if (txt) txt.textContent = `${s.got}/${s.total}`;
+  }
+  updateGlobalProgress();
+}
+
+function updateGlobalProgress() {
+  const s = globalStats();
+  const pct = s.total ? Math.round((s.got / s.total)*100) : 0;
+  document.getElementById('global-progress-fill').style.width = pct + '%';
+  document.getElementById('global-progress-text').textContent = pct + '%';
+}
+
+/* ═══════════════════════════════════════════════
+   TEAM PANEL
+═══════════════════════════════════════════════ */
+let currentCountry = null;
+
+function openTeam(country) {
+  currentCountry = country;
+  currentCountryCode = country.code;
+
+  document.getElementById('team-flag').textContent = country.flag;
+  document.getElementById('team-name').textContent = country.name;
+  document.getElementById('team-sub').textContent = `${country.code} · Grupo ${country.group} · Pág. ${country.page}`;
+
+  renderStickers(country.code);
+  updateTeamProgress(country.code);
+
+  document.getElementById('team-panel').classList.add('open');
+}
+
+function closeTeam() {
+  document.getElementById('team-panel').classList.remove('open');
+  currentCountry = null;
+  currentCountryCode = null;
+  updateGroupProgress();
+}
+
+function renderStickers(code) {
+  const grid = document.getElementById('stickers-grid');
+  grid.innerHTML = '';
+  initCountry(code);
+  for (let i = 0; i < STICKER_COUNT; i++) {
+    const isShield = (i === 0);
+    const num = i + 1;
+    const card = document.createElement('div');
+    card.className = 'sticker';
+    card.dataset.idx = i;
+    updateStickerCard(card, code, i, isShield);
+    grid.appendChild(card);
+  }
+}
+
+function updateStickerCard(card, code, idx, isShield) {
+  const count = getCount(code, idx);
+  const num = idx + 1;
+  card.className = 'sticker' + (count===0 ? '' : count===1 ? ' got' : ' extra');
+
+  card.innerHTML = `
+    <div class="sticker-shield">${isShield ? '🛡️' : ''}</div>
+    <div class="sticker-num">${num}</div>
+    <div class="sticker-count">${count===0 ? '' : count===1 ? '✓' : '×'+count}</div>
+    <div class="sticker-btns">
+      <button class="sticker-btn btn-plus" data-idx="${idx}" data-action="plus">+</button>
+      <button class="sticker-btn btn-minus" data-idx="${idx}" data-action="minus" ${count===0?'disabled':''}>−</button>
+    </div>
+  `;
+
+  const btnPlus = card.querySelector('.btn-plus');
+  const btnMinus = card.querySelector('.btn-minus');
+
+  btnPlus.addEventListener('click', (e) => {
+    e.stopPropagation();
+    handleSticker(code, idx, 1, card);
+  });
+  btnMinus.addEventListener('click', (e) => {
+    e.stopPropagation();
+    handleSticker(code, idx, -1, card);
+  });
+}
+
+function handleSticker(code, idx, delta, card) {
+  const oldCount = getCount(code, idx);
+  const newCount = Math.max(0, oldCount + delta);
+  if (newCount === oldCount) return;
+  setCount(code, idx, newCount);
+
+  const isShield = idx === 0;
+  updateStickerCard(card, code, idx, isShield);
+
+  // pulse animation
+  card.classList.remove('pulse');
+  void card.offsetWidth;
+  card.classList.add('pulse');
+  setTimeout(() => card.classList.remove('pulse'), 200);
+
+  updateTeamProgress(code);
+  scheduleSyncCountry(code);
+}
+
+function updateTeamProgress(code) {
+  const s = countryStats(code);
+  const pct = Math.round((s.got / s.total) * 100);
+  document.getElementById('team-progress-fill').style.width = pct + '%';
+  document.getElementById('team-progress-text').textContent = pct + '%';
+  document.getElementById('ts-got').textContent = s.got;
+  document.getElementById('ts-missing').textContent = s.missing;
+  document.getElementById('ts-extra').textContent = s.extra;
+}
+
+/* ═══════════════════════════════════════════════
+   SEARCH
+═══════════════════════════════════════════════ */
+function initSearch() {
+  const input = document.getElementById('search-input');
+  const clear = document.getElementById('search-clear');
+  const results = document.getElementById('search-results');
+
+  input.addEventListener('input', () => {
+    const q = input.value.trim().toLowerCase();
+    if (!q) { results.classList.remove('show'); clear.classList.add('hidden'); return; }
+    clear.classList.remove('hidden');
+    const matches = ALL_COUNTRIES.filter(c =>
+      c.name.toLowerCase().includes(q) ||
+      c.code.toLowerCase().includes(q) ||
+      c.page.toString().includes(q)
+    ).slice(0, 6);
+
+    if (!matches.length) { results.classList.remove('show'); return; }
+    results.innerHTML = matches.map(c => `
+      <div class="search-result-item" data-code="${c.code}">
+        <span class="sr-flag">${c.flag}</span>
+        <div class="sr-info">
+          <div class="sr-name">${c.name}</div>
+          <div class="sr-code">${c.code} · Grupo ${c.group} · Pág. ${c.page}</div>
+        </div>
+      </div>
+    `).join('');
+    results.classList.add('show');
+
+    results.querySelectorAll('.search-result-item').forEach(el => {
+      el.addEventListener('click', () => {
+        const code = el.dataset.code;
+        const country = ALL_COUNTRIES.find(c => c.code === code);
+        if (country) {
+          results.classList.remove('show');
+          input.value = '';
+          clear.classList.add('hidden');
+          openTeam(country);
+        }
+      });
+    });
+  });
+
+  clear.addEventListener('click', () => {
+    input.value = '';
+    clear.classList.add('hidden');
+    results.classList.remove('show');
+    input.focus();
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.search-bar')) {
+      results.classList.remove('show');
+    }
+  });
+}
+
+/* ═══════════════════════════════════════════════
+   STATS
+═══════════════════════════════════════════════ */
+function openStats() {
+  closeMenu();
+  renderStats();
+  document.getElementById('stats-panel').classList.add('open');
+}
+
+function renderStats() {
+  const body = document.getElementById('stats-body');
+  const gs = globalStats();
+  const pct = gs.total ? Math.round((gs.got / gs.total)*100) : 0;
+
+  let html = `
+    <div class="stats-card">
+      <div class="stats-card-title">Progreso Global</div>
+      <div class="stats-big-num">${pct}%</div>
+      <div class="stats-big-label">${gs.got} de ${gs.total} figuritas obtenidas</div>
+    </div>
+    <div class="stats-card">
+      <div class="stats-row4">
+        <div class="stat-bubble gold"><div class="stat-bubble-num">${gs.got}</div><div class="stat-bubble-label">Obtenidas</div></div>
+        <div class="stat-bubble red"><div class="stat-bubble-num">${gs.missing}</div><div class="stat-bubble-label">Faltantes</div></div>
+        <div class="stat-bubble green"><div class="stat-bubble-num">${gs.extra}</div><div class="stat-bubble-label">Repetidas</div></div>
+        <div class="stat-bubble blue"><div class="stat-bubble-num">${gs.total}</div><div class="stat-bubble-label">Total</div></div>
+      </div>
+    </div>
+    <div class="stats-card">
+      <div class="stats-card-title">Por Grupo</div>
+  `;
+  for (const g of GROUPS) {
+    let got=0, total=0;
+    for (const c of g.countries) { const s=countryStats(c.code); got+=s.got; total+=s.total; }
+    const pctG = total ? Math.round((got/total)*100) : 0;
+    html += `
+      <div class="stats-group-row">
+        <span class="stats-group-letter">${g.id}</span>
+        <div class="stats-group-bar"><div class="stats-group-fill" style="width:${pctG}%"></div></div>
+        <span class="stats-group-pct">${pctG}%</span>
+      </div>`;
+  }
+  html += `</div>`;
+
+  // Per country table
+  html += `<div class="stats-card"><div class="stats-card-title">Por País</div><div class="country-stats-table">`;
+  for (const g of GROUPS) for (const c of g.countries) {
+    initCountry(c.code);
+    const arr = stickerData[c.code];
+    const obtained = [];
+    const extras = [];
+    arr.forEach((count, i) => {
+      if (count >= 1) obtained.push(i+1);
+      if (count >= 2) extras.push({n: i+1, x: count});
+    });
+    if (obtained.length === 0) continue;
+    html += `<div class="cst-row">
+      <div class="cst-name">${c.flag} ${c.name} <span style="font-size:10px;color:var(--text3)">(${obtained.length}/${STICKER_COUNT})</span></div>
+      <div class="cst-stickers">`;
+    for (const n of obtained) {
+      const ex = extras.find(e => e.n === n);
+      html += `<span class="cst-chip${ex ? ' extra' : ''}">${n}${ex ? `(×${ex.x})` : ''}</span>`;
+    }
+    html += `</div></div>`;
+  }
+  html += `</div></div>`;
+
+  body.innerHTML = html;
+}
+
+/* ═══════════════════════════════════════════════
+   PAGE SEARCH
+═══════════════════════════════════════════════ */
+function openPageSearch() {
+  closeMenu();
+  document.getElementById('page-panel').classList.add('open');
+  document.getElementById('page-search-input').value = '';
+  document.getElementById('page-results').innerHTML = '';
+  setTimeout(() => document.getElementById('page-search-input').focus(), 300);
+}
+
+function initPageSearch() {
+  const input = document.getElementById('page-search-input');
+  const results = document.getElementById('page-results');
+  input.addEventListener('input', () => {
+    const q = input.value.trim().toLowerCase();
+    if (!q) { results.innerHTML = ''; return; }
+    const matches = ALL_COUNTRIES.filter(c =>
+      c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q)
+    ).slice(0, 8);
+    results.innerHTML = matches.map(c => `
+      <div class="page-result" data-code="${c.code}">
+        <span class="page-result-flag">${c.flag}</span>
+        <div class="page-result-info">
+          <div class="page-result-name">${c.name} (${c.code})</div>
+          <div class="page-result-page">Página ${c.page} · Grupo ${c.group}</div>
+        </div>
+        <span class="page-result-arrow">›</span>
+      </div>
+    `).join('');
+    results.querySelectorAll('.page-result').forEach(el => {
+      el.addEventListener('click', () => {
+        const code = el.dataset.code;
+        const country = ALL_COUNTRIES.find(c => c.code === code);
+        if (country) {
+          document.getElementById('page-panel').classList.remove('open');
+          openTeam(country);
+        }
+      });
+    });
+  });
+}
+
+/* ═══════════════════════════════════════════════
+   MENU
+═══════════════════════════════════════════════ */
+function openMenu() {
+  document.getElementById('menu-overlay').classList.add('open');
+  document.getElementById('menu-sheet').classList.add('open');
+}
+function closeMenu() {
+  document.getElementById('menu-overlay').classList.remove('open');
+  document.getElementById('menu-sheet').classList.remove('open');
+}
+function initMenu() {
+  document.getElementById('menu-btn').addEventListener('click', openMenu);
+  document.getElementById('menu-overlay').addEventListener('click', closeMenu);
+  document.getElementById('menu-stats').addEventListener('click', openStats);
+  document.getElementById('menu-page').addEventListener('click', openPageSearch);
+  document.getElementById('menu-darkmode').addEventListener('click', toggleDarkMode);
+  document.getElementById('menu-logout').addEventListener('click', () => { closeMenu(); logout(); });
+  document.getElementById('stats-close').addEventListener('click', () => document.getElementById('stats-panel').classList.remove('open'));
+  document.getElementById('page-close').addEventListener('click', () => document.getElementById('page-panel').classList.remove('open'));
+  document.getElementById('team-back').addEventListener('click', closeTeam);
+}
+
+/* ═══════════════════════════════════════════════
+   DARK MODE
+═══════════════════════════════════════════════ */
+function toggleDarkMode() {
+  darkMode = !darkMode;
+  applyDarkMode();
+  localStorage.setItem('album2026_dark', darkMode ? '1' : '0');
+}
+function applyDarkMode() {
+  const toggle = document.getElementById('dark-toggle');
+  if (darkMode) {
+    document.documentElement.classList.remove('light-mode');
+    toggle?.classList.add('on');
+  } else {
+    document.documentElement.classList.add('light-mode');
+    toggle?.classList.remove('on');
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════════ */
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+/* ═══════════════════════════════════════════════
+   LOGIN & LOGOUT
+═══════════════════════════════════════════════ */
+function logout() {
+  albumPassword = '';
+  stickerData = {};
+  document.getElementById('app').classList.add('hidden');
+  document.getElementById('login-screen').classList.remove('hidden');
+  document.getElementById('login-input').value = '';
+  document.getElementById('login-error').textContent = '';
+}
+
+async function login(pw) {
+  albumPassword = pw.trim();
+  if (!albumPassword) {
+    document.getElementById('login-error').textContent = 'Ingresá una contraseña.';
+    return;
+  }
+  document.getElementById('login-btn').textContent = 'Cargando...';
+  document.getElementById('login-btn').disabled = true;
+
+  dbConfig = getDbConfig();
+
+  // Try loading from DB first, then local
+  let loaded = false;
+  if (dbConfig) {
+    const ok = await dbInit();
+    if (ok) {
+      const dbData = await dbLoadAlbum(albumPassword);
+      if (dbData) {
+        stickerData = dbData;
+        loaded = true;
+      }
+    } else {
+      dbConfig = null;
+    }
+  }
+
+  if (!loaded) {
+    const localData = loadLocal(albumPassword);
+    stickerData = localData || {};
+  }
+
+  document.getElementById('login-btn').textContent = 'Entrar al Álbum';
+  document.getElementById('login-btn').disabled = false;
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  document.getElementById('header-album-name').textContent = `Álbum: ${albumPassword}`;
+
+  if (!dbConfig) {
+    document.getElementById('db-config-bar').classList.remove('hidden');
+  }
+
+  setSyncState(dbConfig ? '' : 'error');
+  renderGroups();
+  updateGlobalProgress();
+  showToast(`¡Álbum "${albumPassword}" cargado!`);
+}
+
+function initLogin() {
+  const btn = document.getElementById('login-btn');
+  const input = document.getElementById('login-input');
+  btn.addEventListener('click', () => login(input.value));
+  input.addEventListener('keydown', e => { if (e.key==='Enter') login(input.value); });
+
+  document.getElementById('db-config-btn-open').addEventListener('click', () => {
+    document.getElementById('db-modal').classList.remove('hidden');
+  });
+}
+
+/* ═══════════════════════════════════════════════
+   DB CONFIG MODAL
+═══════════════════════════════════════════════ */
+function initDbModal() {
+  document.getElementById('db-save-btn').addEventListener('click', async () => {
+    const url = document.getElementById('db-url-input').value.trim();
+    const token = document.getElementById('db-token-input').value.trim();
+    if (!url) return;
+
+    // Build Neon HTTP endpoint from connection string
+    // Neon HTTP: https://[host]/sql
+    let httpUrl = url;
+    try {
+      const u = new URL(url.replace(/^postgresql:\/\//, 'https://').replace(/^postgres:\/\//, 'https://'));
+      httpUrl = `https://${u.hostname}/sql`;
+      const cfg = { url: httpUrl, connectionString: url, token };
+      saveDbConfig(cfg);
+      dbConfig = cfg;
+      await dbInit();
+      document.getElementById('db-modal').classList.add('hidden');
+      document.getElementById('db-config-bar').classList.add('hidden');
+      setSyncState('');
+      showToast('Base de datos conectada ✓');
+    } catch(e) {
+      alert('URL inválida. Revisá el formato.');
+    }
+  });
+
+  document.getElementById('db-skip-btn').addEventListener('click', () => {
+    document.getElementById('db-modal').classList.add('hidden');
+  });
+}
+
+/* ═══════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════ */
+async function init() {
+  // Dark mode preference
+  const darkPref = localStorage.getItem('album2026_dark');
+  darkMode = darkPref === null ? true : darkPref === '1';
+  applyDarkMode();
+
+  initMenu();
+  initSearch();
+  initPageSearch();
+  initLogin();
+  initDbModal();
+
+  // Check if was already logged in
+  const lastPw = localStorage.getItem('album2026_lastpw');
+
+  // Show loading for 1.5s then login
+  await new Promise(r => setTimeout(r, 1600));
+  document.getElementById('loading-screen').style.display = 'none';
+  document.getElementById('login-screen').classList.remove('hidden');
+
+  if (lastPw) {
+    document.getElementById('login-input').value = lastPw;
+  }
+
+  document.getElementById('login-btn').addEventListener('click', () => {
+    const pw = document.getElementById('login-input').value;
+    if (pw) localStorage.setItem('album2026_lastpw', pw);
+  }, {once: false});
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
