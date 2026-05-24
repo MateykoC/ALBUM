@@ -1042,48 +1042,112 @@ function loadLocal(pw) {
 }
 
 /* ═══════════════════════════════════════════════
-   DB (Supabase REST)
+   DB (Firebase Firestore)
 ═══════════════════════════════════════════════ */
-const SUPABASE_URL = 'https://ybjbmphlkpjcbbdybkql.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_xEptGgOaOX5I-LU3GW10Hw_BBUMlR2l';
-const SB_HEADERS = {
-  'Content-Type': 'application/json',
-  'apikey': SUPABASE_KEY,
-  'Authorization': `Bearer ${SUPABASE_KEY}`,
-  'Prefer': 'return=minimal'
+const FB_CONFIG = {
+  apiKey: "AIzaSyAtGgLcQUCvznm1TKgnI0kngJXFKAvwgEM",
+  projectId: "album-mundiall"
 };
+const FB_BASE = `https://firestore.googleapis.com/v1/projects/${FB_CONFIG.projectId}/databases/(default)/documents/albums`;
+
+function fbDocUrl(pw, code) {
+  return `${FB_BASE}/${encodeURIComponent(pw)}_${encodeURIComponent(code)}`;
+}
+
+function fbEncodeArr(arr) {
+  return { mapValue: { fields: {
+    stickers: { arrayValue: { values: arr.map(n => ({ integerValue: String(n) })) } }
+  }}};
+}
+
+function fbDecodeDoc(doc) {
+  if (!doc || !doc.fields) return null;
+  const vals = doc.fields.stickers?.arrayValue?.values || [];
+  return vals.map(v => parseInt(v.integerValue || v.doubleValue || 0));
+}
 
 async function dbLoadAlbum(pw) {
   try {
+    // Query all docs where albumPassword field == pw
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/albums?password=eq.${encodeURIComponent(pw)}&select=country_code,stickers`,
-      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
+      `https://firestore.googleapis.com/v1/projects/${FB_CONFIG.projectId}/databases/(default)/documents:runQuery`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          structuredQuery: {
+            from: [{ collectionId: 'albums' }],
+            where: {
+              fieldFilter: {
+                field: { fieldPath: 'pw' },
+                op: 'EQUAL',
+                value: { stringValue: pw }
+              }
+            }
+          }
+        })
+      }
     );
     if (!res.ok) return null;
     const rows = await res.json();
+    if (!rows || !rows.length || !rows[0].document) return null;
     const data = {};
-    for (const row of rows) data[row.country_code] = row.stickers;
-    return data;
+    for (const row of rows) {
+      if (!row.document) continue;
+      const code = row.document.fields?.code?.stringValue;
+      const arr = row.document.fields?.stickers?.arrayValue?.values?.map(
+        v => parseInt(v.integerValue || 0)
+      );
+      if (code && arr) data[code] = arr;
+    }
+    return Object.keys(data).length ? data : null;
   } catch { return null; }
 }
 
 async function dbSaveCountry(pw, code, arr) {
   try {
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/albums`,
-      {
-        method: 'POST',
-        headers: { ...SB_HEADERS, 'Prefer': 'resolution=merge-duplicates' },
-        body: JSON.stringify({
-          password: pw,
-          country_code: code,
-          stickers: arr,
-          updated_at: new Date().toISOString()
-        })
-      }
-    );
+    const docId = `${pw}_${code}`;
+    const url = `${FB_BASE}/${encodeURIComponent(docId)}?updateMask.fieldPaths=pw&updateMask.fieldPaths=code&updateMask.fieldPaths=stickers&updateMask.fieldPaths=updated_at`;
+    const res = await fetch(url, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fields: {
+          pw:         { stringValue: pw },
+          code:       { stringValue: code },
+          stickers:   { arrayValue: { values: arr.map(n => ({ integerValue: String(n) })) } },
+          updated_at: { stringValue: new Date().toISOString() }
+        }
+      })
+    });
     return res.ok;
   } catch { return false; }
+}
+
+/* ── Migración automática desde Supabase (una sola vez por álbum) ── */
+const SUPABASE_URL = 'https://ybjbmphlkpjcbbdybkql.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_xEptGgOaOX5I-LU3GW10Hw_BBUMlR2l';
+
+async function migrateFromSupabase(pw) {
+  const migratedKey = `album2026_migrated_${pw}`;
+  if (localStorage.getItem(migratedKey)) return null; // ya migrado
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/albums?password=eq.${encodeURIComponent(pw)}&select=country_code,stickers`,
+      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
+    );
+    if (!res.ok) { localStorage.setItem(migratedKey, '1'); return null; }
+    const rows = await res.json();
+    if (!rows || !rows.length) { localStorage.setItem(migratedKey, '1'); return null; }
+    const data = {};
+    for (const row of rows) data[row.country_code] = row.stickers;
+    // Copiar todo a Firebase
+    for (const [code, arr] of Object.entries(data)) {
+      await dbSaveCountry(pw, code, arr);
+    }
+    localStorage.setItem(migratedKey, '1');
+    return data;
+  } catch { localStorage.setItem(migratedKey, '1'); return null; }
 }
 
 /* ═══════════════════════════════════════════════
@@ -1640,14 +1704,25 @@ async function login(pw) {
   document.getElementById('login-btn').textContent = 'Cargando...';
   document.getElementById('login-btn').disabled = true;
 
-  // Intentar cargar desde Supabase primero, luego local como fallback
+  // 1. Intentar cargar desde Firebase
   let loaded = false;
-  const dbData = await dbLoadAlbum(albumPassword);
-  if (dbData) {
-    stickerData = dbData;
+  const fbData = await dbLoadAlbum(albumPassword);
+  if (fbData && Object.keys(fbData).length) {
+    stickerData = fbData;
     loaded = true;
   }
 
+  // 2. Si no hay datos en Firebase, intentar migrar desde Supabase
+  if (!loaded) {
+    const migrated = await migrateFromSupabase(albumPassword);
+    if (migrated && Object.keys(migrated).length) {
+      stickerData = migrated;
+      loaded = true;
+      showToast('Datos migrados correctamente ✓');
+    }
+  }
+
+  // 3. Fallback: localStorage local
   if (!loaded) {
     const localData = loadLocal(albumPassword);
     stickerData = localData || {};
