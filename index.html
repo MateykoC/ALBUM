@@ -1496,7 +1496,7 @@ function renderStats() {
     initCountry(cc.code);
     const arr = stickerData[cc.code];
     const extras = [];
-    arr.forEach((count, i) => { if (count >= 2) extras.push({n: i+1, x: count}); });
+    arr.forEach((count, i) => { if (count >= 2) extras.push({n: i+1, x: count - 1}); });
     if (!extras.length) continue;
     hasAnyExtra = true;
     html += `<div class="cst-row">
