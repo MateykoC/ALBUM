@@ -661,52 +661,7 @@ input { font-family: var(--font-body); }
 /* ═══════════════════════════════════════════════
    MISC
 ═══════════════════════════════════════════════ */
-.db-config-bar {
-  background: rgba(240,180,41,0.1);
-  border-bottom: 1px solid rgba(240,180,41,0.2);
-  padding: 6px 12px;
-  display: flex; align-items: center; gap: 8px; flex-shrink: 0;
-}
-.db-config-label { font-size: 10px; color: var(--gold); flex: 1; }
-.db-config-btn {
-  font-size: 10px; color: var(--gold); background: rgba(240,180,41,0.15);
-  border: 1px solid rgba(240,180,41,0.3); border-radius: 6px; padding: 3px 8px;
-}
-
-/* DB Config Modal */
-#db-modal {
-  position: fixed; inset: 0; z-index: 500;
-  background: rgba(0,0,0,0.7); backdrop-filter: blur(6px);
-  display: flex; align-items: flex-end; justify-content: center;
-}
-#db-modal.hidden { display: none; }
-.db-modal-sheet {
-  background: var(--bg2); border-radius: 20px 20px 0 0;
-  border-top: 1px solid var(--border);
-  padding: 24px 20px 40px; width: 100%;
-}
-.db-modal-title { font-family: var(--font-display); font-size: 20px; color: var(--gold); margin-bottom: 6px; letter-spacing: 1px; }
-.db-modal-sub { font-size: 12px; color: var(--text2); margin-bottom: 16px; line-height: 1.6; }
-.db-modal-input {
-  width: 100%; padding: 12px 14px;
-  background: var(--surface); border: 1.5px solid var(--border);
-  border-radius: var(--radius); color: var(--text); font-size: 13px;
-  outline: none; margin-bottom: 12px; transition: border-color 0.2s;
-}
-.db-modal-input:focus { border-color: var(--gold); }
-.db-modal-btn {
-  width: 100%; padding: 14px;
-  background: linear-gradient(135deg, var(--blue2), var(--blue));
-  border-radius: var(--radius); color: #fff; font-size: 15px;
-  font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
-  box-shadow: 0 4px 20px rgba(37,99,235,0.35);
-}
-.db-modal-skip {
-  width: 100%; padding: 12px; text-align: center;
-  font-size: 13px; color: var(--text3); margin-top: 8px; background: none;
-}
-.db-info { font-size: 11px; color: var(--text3); line-height: 1.6; margin-top: 8px; }
-code { background: var(--surface2); padding: 2px 6px; border-radius: 4px; font-size: 10px; color: var(--gold); }
+/* DB modal CSS eliminado — conexión hardcodeada */
 
 /* Responsive tweaks for bigger screens */
 @media (min-width: 400px) {
@@ -751,32 +706,10 @@ code { background: var(--surface2); padding: 2px 6px; border-radius: 4px; font-s
   </div>
 </div>
 
-<!-- DB Config Modal -->
-<div id="db-modal" class="hidden">
-  <div class="db-modal-sheet">
-    <div class="db-modal-title">Configurar Base de Datos</div>
-    <div class="db-modal-sub">
-      Para sincronizar entre dispositivos, conectá tu base de datos Neon. Si no tenés, el álbum funciona solo en este dispositivo (localStorage).
-    </div>
-    <input class="db-modal-input" id="db-url-input" type="text" placeholder="postgresql://usuario:clave@host.neon.tech/db" autocomplete="off" spellcheck="false">
-    <input class="db-modal-input" id="db-token-input" type="text" placeholder="Token de autenticación HTTP de Neon (opcional)" autocomplete="off" spellcheck="false">
-    <div class="db-info">
-      Obtené tu URL en <code>console.neon.tech</code> → tu proyecto → Connection Details.<br>
-      El token se obtiene en API Keys del proyecto Neon.
-    </div>
-    <button class="db-modal-btn" id="db-save-btn">Guardar y conectar</button>
-    <button class="db-modal-skip" id="db-skip-btn">Usar solo en este dispositivo (sin sincronización)</button>
-  </div>
-</div>
+<!-- DB hardcodeado — sin modal de configuración -->
 
 <!-- Main App -->
 <div id="app" class="hidden">
-  <!-- DB config bar (shown if no DB configured) -->
-  <div class="db-config-bar hidden" id="db-config-bar">
-    <span class="db-config-label">⚠️ Sin sincronización — solo local</span>
-    <button class="db-config-btn" id="db-config-btn-open">Configurar BD</button>
-  </div>
-
   <!-- Header -->
   <div class="header" style="position:relative">
     <div class="header-top">
@@ -983,7 +916,10 @@ let albumPassword = '';
 let stickerData = {}; // { 'MEX': [0,0,...20 items], 'BRA': [...] }
 let darkMode = true;
 let currentCountryCode = null;
-let dbConfig = null; // { url, token }
+// Conexión fija a Neon — no requiere configuración por usuario
+const NEON_CONNECTION_STRING = 'postgresql://neondb_owner:npg_vCGoJdLx4U2T@ep-cold-bread-ap2o8dif-pooler.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require';
+const NEON_HTTP_URL = 'https://ep-cold-bread-ap2o8dif-pooler.c-7.us-east-1.aws.neon.tech/sql';
+let dbConfig = { url: NEON_HTTP_URL, connectionString: NEON_CONNECTION_STRING, token: '' };
 let syncTimeout = null;
 let isSyncing = false;
 
@@ -1002,13 +938,7 @@ function loadLocal(pw) {
 /* ═══════════════════════════════════════════════
    DB (Neon HTTP)
 ═══════════════════════════════════════════════ */
-function getDbConfig() {
-  const raw = localStorage.getItem('album2026_db');
-  return raw ? JSON.parse(raw) : null;
-}
-function saveDbConfig(cfg) {
-  localStorage.setItem('album2026_db', JSON.stringify(cfg));
-}
+// DB config hardcodeada — sin funciones de configuración manual
 
 async function dbQuery(sql, params=[]) {
   if (!dbConfig) return null;
@@ -1561,20 +1491,16 @@ async function login(pw) {
   document.getElementById('login-btn').textContent = 'Cargando...';
   document.getElementById('login-btn').disabled = true;
 
-  dbConfig = getDbConfig();
+  // dbConfig ya está hardcodeado globalmente
 
-  // Try loading from DB first, then local
+  // Intentar cargar desde DB primero, luego local como fallback
   let loaded = false;
-  if (dbConfig) {
-    const ok = await dbInit();
-    if (ok) {
-      const dbData = await dbLoadAlbum(albumPassword);
-      if (dbData) {
-        stickerData = dbData;
-        loaded = true;
-      }
-    } else {
-      dbConfig = null;
+  const ok = await dbInit();
+  if (ok) {
+    const dbData = await dbLoadAlbum(albumPassword);
+    if (dbData) {
+      stickerData = dbData;
+      loaded = true;
     }
   }
 
@@ -1589,11 +1515,7 @@ async function login(pw) {
   document.getElementById('app').classList.remove('hidden');
   document.getElementById('header-album-name').textContent = `Álbum: ${albumPassword}`;
 
-  if (!dbConfig) {
-    document.getElementById('db-config-bar').classList.remove('hidden');
-  }
-
-  setSyncState(dbConfig ? '' : 'error');
+  setSyncState('');
   renderGroups();
   updateGlobalProgress();
   showToast(`¡Álbum "${albumPassword}" cargado!`);
@@ -1604,44 +1526,12 @@ function initLogin() {
   const input = document.getElementById('login-input');
   btn.addEventListener('click', () => login(input.value));
   input.addEventListener('keydown', e => { if (e.key==='Enter') login(input.value); });
-
-  document.getElementById('db-config-btn-open').addEventListener('click', () => {
-    document.getElementById('db-modal').classList.remove('hidden');
-  });
 }
 
 /* ═══════════════════════════════════════════════
    DB CONFIG MODAL
 ═══════════════════════════════════════════════ */
-function initDbModal() {
-  document.getElementById('db-save-btn').addEventListener('click', async () => {
-    const url = document.getElementById('db-url-input').value.trim();
-    const token = document.getElementById('db-token-input').value.trim();
-    if (!url) return;
-
-    // Build Neon HTTP endpoint from connection string
-    // Neon HTTP: https://[host]/sql
-    let httpUrl = url;
-    try {
-      const u = new URL(url.replace(/^postgresql:\/\//, 'https://').replace(/^postgres:\/\//, 'https://'));
-      httpUrl = `https://${u.hostname}/sql`;
-      const cfg = { url: httpUrl, connectionString: url, token };
-      saveDbConfig(cfg);
-      dbConfig = cfg;
-      await dbInit();
-      document.getElementById('db-modal').classList.add('hidden');
-      document.getElementById('db-config-bar').classList.add('hidden');
-      setSyncState('');
-      showToast('Base de datos conectada ✓');
-    } catch(e) {
-      alert('URL inválida. Revisá el formato.');
-    }
-  });
-
-  document.getElementById('db-skip-btn').addEventListener('click', () => {
-    document.getElementById('db-modal').classList.add('hidden');
-  });
-}
+// DB config hardcodeada — sin modal de configuración
 
 /* ═══════════════════════════════════════════════
    INIT
@@ -1656,7 +1546,6 @@ async function init() {
   initSearch();
   initPageSearch();
   initLogin();
-  initDbModal();
 
   // Check if was already logged in
   const lastPw = localStorage.getItem('album2026_lastpw');
