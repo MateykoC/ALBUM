@@ -916,10 +916,7 @@ let albumPassword = '';
 let stickerData = {}; // { 'MEX': [0,0,...20 items], 'BRA': [...] }
 let darkMode = true;
 let currentCountryCode = null;
-// Conexión fija a Neon — no requiere configuración por usuario
-const NEON_CONNECTION_STRING = 'postgresql://neondb_owner:npg_vCGoJdLx4U2T@ep-cold-bread-ap2o8dif-pooler.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require';
-const NEON_HTTP_URL = 'https://ep-cold-bread-ap2o8dif-pooler.c-7.us-east-1.aws.neon.tech/sql';
-let dbConfig = { url: NEON_HTTP_URL, connectionString: NEON_CONNECTION_STRING, token: '' };
+// Supabase — conexión hardcodeada, sin dbConfig
 let syncTimeout = null;
 let isSyncing = false;
 
@@ -936,62 +933,48 @@ function loadLocal(pw) {
 }
 
 /* ═══════════════════════════════════════════════
-   DB (Neon HTTP)
+   DB (Supabase REST)
 ═══════════════════════════════════════════════ */
-// DB config hardcodeada — sin funciones de configuración manual
+const SUPABASE_URL = 'https://ybjbmphlkpjcbbdybkql.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_xEptGgOaOX5I-LU3GW10Hw_BBUMlR2l';
+const SB_HEADERS = {
+  'Content-Type': 'application/json',
+  'apikey': SUPABASE_KEY,
+  'Authorization': `Bearer ${SUPABASE_KEY}`,
+  'Prefer': 'return=minimal'
+};
 
-async function dbQuery(sql, params=[]) {
-  if (!dbConfig) return null;
+async function dbLoadAlbum(pw) {
   try {
-    const res = await fetch(dbConfig.url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(dbConfig.token ? {'Authorization': `Bearer ${dbConfig.token}`} : {}),
-        'Neon-Connection-String': dbConfig.connectionString || '',
-      },
-      body: JSON.stringify({ query: sql, params })
-    });
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/albums?password=eq.${encodeURIComponent(pw)}&select=country_code,stickers`,
+      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
+    );
     if (!res.ok) return null;
-    return await res.json();
+    const rows = await res.json();
+    const data = {};
+    for (const row of rows) data[row.country_code] = row.stickers;
+    return data;
   } catch { return null; }
 }
 
-// We use Neon HTTP SQL endpoint: POST /sql
-// Format: { query: "...", params: [...] }
-async function dbInit() {
-  if (!dbConfig) return false;
-  const r = await dbQuery(
-    `CREATE TABLE IF NOT EXISTS albums (
-      password TEXT NOT NULL,
-      country_code TEXT NOT NULL,
-      stickers JSONB NOT NULL,
-      updated_at TIMESTAMPTZ DEFAULT now(),
-      PRIMARY KEY (password, country_code)
-    )`
-  );
-  return r !== null;
-}
-
-async function dbLoadAlbum(pw) {
-  const r = await dbQuery('SELECT country_code, stickers FROM albums WHERE password=$1', [pw]);
-  if (!r || !r.rows) return null;
-  const data = {};
-  for (const row of r.rows) {
-    data[row.country_code] = row.stickers;
-  }
-  return data;
-}
-
 async function dbSaveCountry(pw, code, arr) {
-  const r = await dbQuery(
-    `INSERT INTO albums (password, country_code, stickers, updated_at)
-     VALUES ($1, $2, $3::jsonb, now())
-     ON CONFLICT (password, country_code) DO UPDATE
-       SET stickers=$3::jsonb, updated_at=now()`,
-    [pw, code, JSON.stringify(arr)]
-  );
-  return r !== null;
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/albums`,
+      {
+        method: 'POST',
+        headers: { ...SB_HEADERS, 'Prefer': 'resolution=merge-duplicates' },
+        body: JSON.stringify({
+          password: pw,
+          country_code: code,
+          stickers: arr,
+          updated_at: new Date().toISOString()
+        })
+      }
+    );
+    return res.ok;
+  } catch { return false; }
 }
 
 /* ═══════════════════════════════════════════════
@@ -1044,7 +1027,6 @@ function setSyncState(state) {
 }
 
 async function syncCountry(code) {
-  if (!dbConfig) { saveLocal(); return; }
   setSyncState('syncing');
   const ok = await dbSaveCountry(albumPassword, code, stickerData[code]);
   saveLocal();
@@ -1052,8 +1034,7 @@ async function syncCountry(code) {
 }
 
 function scheduleSyncCountry(code) {
-  saveLocal(); // always local first
-  if (!dbConfig) return;
+  saveLocal();
   clearTimeout(syncTimeout);
   syncTimeout = setTimeout(() => syncCountry(code), 600);
 }
@@ -1491,17 +1472,12 @@ async function login(pw) {
   document.getElementById('login-btn').textContent = 'Cargando...';
   document.getElementById('login-btn').disabled = true;
 
-  // dbConfig ya está hardcodeado globalmente
-
-  // Intentar cargar desde DB primero, luego local como fallback
+  // Intentar cargar desde Supabase primero, luego local como fallback
   let loaded = false;
-  const ok = await dbInit();
-  if (ok) {
-    const dbData = await dbLoadAlbum(albumPassword);
-    if (dbData) {
-      stickerData = dbData;
-      loaded = true;
-    }
+  const dbData = await dbLoadAlbum(albumPassword);
+  if (dbData) {
+    stickerData = dbData;
+    loaded = true;
   }
 
   if (!loaded) {
