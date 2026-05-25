@@ -4,8 +4,23 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Álbum Mundial FIFA 2026</title>
+<!-- Open Graph / WhatsApp preview -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Álbum Virtual FIFA 2026 🏆">
+<meta property="og:description" content="Completá tu álbum del Mundial 2026. Cargá figuritas, encontrá repetidas e intercambiá con amigos.">
+<meta property="og:image" content="preview.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="preview.jpg">
+<meta name="description" content="Álbum virtual de figuritas del Mundial FIFA 2026. Compartí con amigos y encontrá intercambios.">
+<!-- Favicon -->
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;900&display=swap" rel="stylesheet">
+<!-- QR lib -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 /* ═══════════════════════════════════════════════
    VARIABLES & RESET
@@ -586,10 +601,11 @@ input { font-family: var(--font-body); }
 .stats-header {
   background: var(--bg2);
   border-bottom: 1px solid var(--border);
-  padding: 12px 14px;
-  display: flex; align-items: center; gap: 10px;
+  padding: 12px 14px 0;
+  display: flex; flex-direction: column; gap: 0;
   flex-shrink: 0;
 }
+.stats-header-top { display: flex; align-items: center; gap: 10px; padding-bottom: 10px; }
 .stats-close {
   width: 36px; height: 36px; border-radius: 10px;
   background: var(--surface);
@@ -597,8 +613,94 @@ input { font-family: var(--font-body); }
   font-size: 20px; color: var(--text);
 }
 .stats-title { font-family: var(--font-display); font-size: 22px; color: var(--gold); letter-spacing: 2px; }
+.stats-tabs {
+  display: flex; overflow-x: auto; gap: 0;
+  scrollbar-width: none; border-top: 1px solid var(--border);
+}
+.stats-tabs::-webkit-scrollbar { display: none; }
+.stats-tab {
+  padding: 8px 14px; font-size: 12px; font-weight: 700;
+  color: var(--text3); background: none; white-space: nowrap;
+  border-bottom: 2px solid transparent; transition: color 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+}
+.stats-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
 
 .stats-body { flex: 1; overflow-y: auto; padding: 12px; gap: 12px; display: flex; flex-direction: column; }
+
+/* ── Extras section in groups list ── */
+.extras-section {
+  border-top: 2px solid var(--border);
+  margin-top: 8px;
+}
+.extras-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 12px; cursor: pointer;
+  background: linear-gradient(135deg, rgba(240,180,41,0.08), transparent);
+  user-select: none;
+}
+.extras-icon { font-size: 22px; }
+.extras-name { font-size: 14px; font-weight: 700; color: var(--gold); flex: 1; }
+.extras-sub { font-size: 11px; color: var(--text3); }
+
+/* ── Confetti ── */
+#confetti-canvas {
+  position: fixed; inset: 0; pointer-events: none; z-index: 300;
+  opacity: 0; transition: opacity 0.3s;
+}
+#confetti-canvas.show { opacity: 1; }
+
+/* ── BG animation ── */
+#bg-canvas {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  opacity: 0.35;
+}
+#app, #team-panel, #stats-panel, #page-panel, #compare-panel,
+#login-screen, #loading-screen {
+  position: relative; z-index: 1;
+}
+#login-screen, #loading-screen { z-index: 100; }
+#team-panel, #stats-panel, #page-panel, #compare-panel { z-index: 50; }
+
+/* ── Share card modal ── */
+#share-modal {
+  position: fixed; inset: 0; z-index: 400;
+  background: rgba(0,0,0,0.8); backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+}
+#share-modal.hidden { display: none; }
+.share-modal-inner { width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 12px; }
+#share-card {
+  background: linear-gradient(135deg, #0d1a3a 0%, #1a0a08 100%);
+  border: 1px solid rgba(240,180,41,0.3);
+  border-radius: 16px; padding: 20px; color: #fff;
+}
+.share-card-title { font-family: var(--font-display); font-size: 24px; color: var(--gold); letter-spacing: 3px; margin-bottom: 4px; }
+.share-card-sub { font-size: 11px; color: rgba(255,255,255,0.4); letter-spacing: 2px; margin-bottom: 16px; }
+.share-card-pct { font-family: var(--font-display); font-size: 56px; color: var(--gold); line-height: 1; }
+.share-card-pct-label { font-size: 11px; color: rgba(255,255,255,0.5); margin-bottom: 14px; }
+.share-card-bars { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
+.share-bar-row { display: flex; align-items: center; gap: 6px; }
+.share-bar-letter { font-family: var(--font-display); font-size: 13px; color: var(--gold); width: 16px; }
+.share-bar-track { flex: 1; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
+.share-bar-fill { height: 100%; background: linear-gradient(90deg, var(--blue2), var(--gold)); border-radius: 2px; }
+.share-bar-pct { font-size: 10px; color: rgba(255,255,255,0.4); width: 28px; text-align: right; }
+.share-card-footer { font-size: 10px; color: rgba(255,255,255,0.3); border-top: 1px solid rgba(255,255,255,0.08); padding-top: 10px; }
+.share-modal-btns { display: flex; gap: 8px; }
+.share-modal-btn {
+  flex: 1; padding: 12px; border-radius: var(--radius-sm);
+  font-size: 13px; font-weight: 700;
+  background: linear-gradient(135deg, var(--blue2), var(--blue));
+  color: #fff; box-shadow: 0 3px 12px rgba(37,99,235,0.3);
+}
+.share-modal-btn.secondary {
+  background: var(--surface2); color: var(--text); box-shadow: none;
+  border: 1px solid var(--border);
+}
+
+/* ── QR code in compare ── */
+.compare-qr-wrap { display: flex; justify-content: center; margin-top: 10px; }
+#compare-qr { background: white; padding: 10px; border-radius: 10px; display: inline-block; }
 
 .stats-card {
   background: var(--surface);
@@ -763,6 +865,27 @@ input { font-family: var(--font-body); }
 </head>
 <body>
 
+<canvas id="bg-canvas"></canvas>
+<canvas id="confetti-canvas"></canvas>
+
+<!-- Share Modal -->
+<div id="share-modal" class="hidden">
+  <div class="share-modal-inner">
+    <div id="share-card">
+      <div class="share-card-title">🏆 FIFA 2026</div>
+      <div class="share-card-sub">MI ÁLBUM DE FIGURITAS</div>
+      <div class="share-card-pct" id="sc-pct">0%</div>
+      <div class="share-card-pct-label" id="sc-label">figuritas obtenidas</div>
+      <div class="share-card-bars" id="sc-bars"></div>
+      <div class="share-card-footer" id="sc-footer"></div>
+    </div>
+    <div class="share-modal-btns">
+      <button class="share-modal-btn" id="share-copy-btn">📋 Copiar texto</button>
+      <button class="share-modal-btn secondary" id="share-close-btn">Cerrar</button>
+    </div>
+  </div>
+</div>
+
 <!-- Loading Screen -->
 <div id="loading-screen">
   <div class="loading-trophy">🏆</div>
@@ -822,6 +945,19 @@ input { font-family: var(--font-body); }
   <!-- Content -->
   <div class="content" id="groups-content">
     <div class="groups-list" id="groups-list"></div>
+    <div class="extras-section">
+      <div class="extras-header" id="extras-header">
+        <span class="extras-icon">⭐</span>
+        <div>
+          <div class="extras-name">Figuras Extras</div>
+          <div class="extras-sub">Especiales · 20 figuras</div>
+        </div>
+        <span class="country-mini-progress">
+          <div class="country-mini-bar"><div class="country-mini-fill" id="extras-mini-fill" style="width:0%"></div></div>
+          <div class="country-mini-text" id="extras-mini-text">0/20</div>
+        </span>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -868,6 +1004,7 @@ input { font-family: var(--font-body); }
       <div class="compare-section-title">Tu código de comparación</div>
       <button class="compare-share-btn" id="compare-share-btn">📋 Copiar mi código</button>
       <div class="compare-code-box" id="compare-my-code"></div>
+      <div class="compare-qr-wrap"><div id="compare-qr"></div></div>
     </div>
     <div class="compare-section">
       <div class="compare-section-title">Comparar con otro álbum</div>
@@ -883,8 +1020,17 @@ input { font-family: var(--font-body); }
 <!-- Stats Panel -->
 <div id="stats-panel">
   <div class="stats-header">
-    <button class="stats-close" id="stats-close">‹</button>
-    <div class="stats-title">Estadísticas</div>
+    <div class="stats-header-top">
+      <button class="stats-close" id="stats-close">‹</button>
+      <div class="stats-title">Estadísticas</div>
+    </div>
+    <div class="stats-tabs">
+      <button class="stats-tab active" data-tab="general">General</button>
+      <button class="stats-tab" data-tab="faltantes">Faltantes</button>
+      <button class="stats-tab" data-tab="repetidas">Repetidas</button>
+      <button class="stats-tab" data-tab="especiales">Especiales</button>
+      <button class="stats-tab" data-tab="curiosas">Curiosidades</button>
+    </div>
   </div>
   <div class="stats-body" id="stats-body"></div>
 </div>
@@ -915,6 +1061,10 @@ input { font-family: var(--font-body); }
   <div class="menu-item" id="menu-compare">
     <span class="menu-icon">🔄</span>
     <span class="menu-label">Comparar álbum</span>
+  </div>
+  <div class="menu-item" id="menu-share">
+    <span class="menu-icon">📤</span>
+    <span class="menu-label">Compartir progreso</span>
   </div>
   <div class="menu-divider"></div>
   <div class="menu-item" id="menu-darkmode">
@@ -1015,7 +1165,16 @@ const GROUPS = [
 
 const ALL_COUNTRIES = GROUPS.flatMap(g => g.countries.map(c => ({...c, group: g.id})));
 
-// Sticker count per team: 1 escudo + 19 jugadores = 20
+// Figuritas especiales
+const SPECIALS = {
+  name: 'Especiales', code: 'SPEC', flag: '⭐', group: 'EXTRA', page: null,
+  isSpecial: true,
+  stickers: ['00', 'FWC1','FWC2','FWC3','FWC4','FWC5','FWC6','FWC7','FWC8','FWC9',
+             'FWC10','FWC11','FWC12','FWC13','FWC14','FWC15','FWC16','FWC17','FWC18','FWC19']
+};
+// All navigable (for prev/next)
+const ALL_NAVIGABLE = [...ALL_COUNTRIES, SPECIALS];
+
 const STICKER_COUNT = 20;
 
 /* ═══════════════════════════════════════════════
@@ -1179,14 +1338,21 @@ function countryStats(code) {
   return { got, missing, extra, total: STICKER_COUNT };
 }
 
-function globalStats() {
+function globalStats(includeSpecials=true) {
   let got=0, missing=0, extra=0, total=0;
   for (const g of GROUPS) for (const c of g.countries) {
     const s = countryStats(c.code);
     got += s.got; missing += s.missing; extra += s.extra; total += s.total;
   }
+  if (includeSpecials) {
+    const s = countryStats('SPEC');
+    got += s.got; missing += s.missing; extra += s.extra; total += s.total;
+  }
   return { got, missing, extra, total };
 }
+
+function normalStats() { return globalStats(false); }
+function specialsStats() { return countryStats('SPEC'); }
 
 /* ═══════════════════════════════════════════════
    SYNC
@@ -1291,11 +1457,19 @@ function updateGroupProgress() {
     if (fill) fill.style.width = pct + '%';
     if (txt) txt.textContent = `${s.got}/${s.total}`;
   }
+  // extras mini-bar
+  const sp = countryStats('SPEC');
+  const spPct = Math.round((sp.got / sp.total)*100);
+  const ef = document.getElementById('extras-mini-fill');
+  const et = document.getElementById('extras-mini-text');
+  if (ef) ef.style.width = spPct + '%';
+  if (et) et.textContent = `${sp.got}/${sp.total}`;
+
   updateGlobalProgress();
 }
 
 function updateGlobalProgress() {
-  const s = globalStats();
+  const s = globalStats(true);
   const pct = s.total ? Math.round((s.got / s.total)*100) : 0;
   document.getElementById('global-progress-fill').style.width = pct + '%';
   document.getElementById('global-progress-text').textContent = pct + '%';
@@ -1312,28 +1486,32 @@ function openTeam(country, skipAnim) {
 
   document.getElementById('team-flag').textContent = country.flag;
   document.getElementById('team-name').textContent = country.name;
-  document.getElementById('team-sub').textContent = `${country.code} · Grupo ${country.group} · Pág. ${country.page}`;
+  if (country.isSpecial) {
+    document.getElementById('team-sub').textContent = 'Figuras Especiales · 20 figuritas';
+  } else {
+    document.getElementById('team-sub').textContent = `${country.code} · Grupo ${country.group} · Pág. ${country.page}`;
+  }
 
-  renderStickers(country.code);
+  renderStickers(country.code, country.isSpecial ? country.stickers : null);
   updateTeamProgress(country.code);
 
   const panel = document.getElementById('team-panel');
   panel.classList.add('open');
 
   // update nav buttons
-  const idx = ALL_COUNTRIES.findIndex(c => c.code === country.code);
+  const idx = ALL_NAVIGABLE.findIndex(c => c.code === country.code);
   const prevBtn = document.getElementById('team-prev');
   const nextBtn = document.getElementById('team-next');
   if (idx > 0) {
-    const prev = ALL_COUNTRIES[idx - 1];
+    const prev = ALL_NAVIGABLE[idx - 1];
     prevBtn.innerHTML = `<span>‹</span> ${prev.flag} ${prev.name}`;
     prevBtn.disabled = false; prevBtn.style.opacity = '1';
   } else {
     prevBtn.innerHTML = `<span>‹</span> Anterior`;
     prevBtn.disabled = true; prevBtn.style.opacity = '0.3';
   }
-  if (idx < ALL_COUNTRIES.length - 1) {
-    const next = ALL_COUNTRIES[idx + 1];
+  if (idx < ALL_NAVIGABLE.length - 1) {
+    const next = ALL_NAVIGABLE[idx + 1];
     nextBtn.innerHTML = `${next.flag} ${next.name} <span>›</span>`;
     nextBtn.disabled = false; nextBtn.style.opacity = '1';
   } else {
@@ -1349,17 +1527,15 @@ function closeTeam() {
   updateGroupProgress();
 }
 
-function renderStickers(code) {
+function renderStickers(code, labels=null) {
   const grid = document.getElementById('stickers-grid');
   grid.innerHTML = '';
   initCountry(code);
   for (let i = 0; i < STICKER_COUNT; i++) {
-    const isShield = (i === 0);
-    const num = i + 1;
     const card = document.createElement('div');
     card.className = 'sticker';
     card.dataset.idx = i;
-    updateStickerCard(card, code, i, isShield);
+    updateStickerCard(card, code, i, labels);
     grid.appendChild(card);
   }
 }
@@ -1370,15 +1546,15 @@ function stickerIcon(idx) {
   return '';
 }
 
-function updateStickerCard(card, code, idx, isShield) {
+function updateStickerCard(card, code, idx, labels=null) {
   const count = getCount(code, idx);
-  const num = idx + 1;
   card.className = 'sticker' + (count===0 ? '' : count===1 ? ' got' : ' extra');
-  const icon = stickerIcon(idx);
+  const icon = labels ? '' : stickerIcon(idx);
+  const label = labels ? labels[idx] : String(idx + 1);
 
   card.innerHTML = `
     <div class="sticker-icon">${icon}</div>
-    <div class="sticker-num">${num}</div>
+    <div class="sticker-num" style="font-size:${labels&&label.length>3?'11px':'18px'}">${label}</div>
     <div class="sticker-btns">
       <button class="sticker-btn btn-plus" data-idx="${idx}" data-action="plus">+</button>
       <button class="sticker-btn btn-minus" data-idx="${idx}" data-action="minus" ${count===0?'disabled':''}>−</button>
@@ -1399,14 +1575,13 @@ function updateStickerCard(card, code, idx, isShield) {
   });
 }
 
-function handleSticker(code, idx, delta, card) {
+function handleSticker(code, idx, delta, card, labels=null) {
   const oldCount = getCount(code, idx);
   const newCount = Math.max(0, oldCount + delta);
   if (newCount === oldCount) return;
   setCount(code, idx, newCount);
 
-  const isShield = idx === 0;
-  updateStickerCard(card, code, idx, isShield);
+  updateStickerCard(card, code, idx, labels);
 
   // pulse animation
   card.classList.remove('pulse');
@@ -1416,6 +1591,10 @@ function handleSticker(code, idx, delta, card) {
 
   updateTeamProgress(code);
   scheduleSyncCountry(code);
+
+  // Celebrate 100%
+  const s = countryStats(code);
+  if (s.got === s.total && delta > 0) launchConfetti();
 }
 
 function updateTeamProgress(code) {
@@ -1489,20 +1668,42 @@ function initSearch() {
 /* ═══════════════════════════════════════════════
    STATS
 ═══════════════════════════════════════════════ */
+let currentStatsTab = 'general';
+
 function openStats() {
   closeMenu();
-  renderStats();
+  currentStatsTab = 'general';
+  document.querySelectorAll('.stats-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.tab === 'general');
+  });
+  renderStats(currentStatsTab);
   document.getElementById('stats-panel').classList.add('open');
 }
 
-function renderStats() {
-  const body = document.getElementById('stats-body');
-  const gs = globalStats();
-  const pct = gs.total ? Math.round((gs.got / gs.total)*100) : 0;
+function initStatsTabs() {
+  document.querySelectorAll('.stats-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      currentStatsTab = tab.dataset.tab;
+      document.querySelectorAll('.stats-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      renderStats(currentStatsTab);
+    });
+  });
+}
 
-  let html = `
-    <div class="stats-card">
-      <div class="stats-card-title">Progreso Global</div>
+function renderStats(tab='general') {
+  const body = document.getElementById('stats-body');
+  let html = '';
+
+  if (tab === 'general') {
+    const gs = globalStats(true);
+    const ns = normalStats();
+    const sp = specialsStats();
+    const pct = gs.total ? Math.round((gs.got/gs.total)*100) : 0;
+    const pctN = ns.total ? Math.round((ns.got/ns.total)*100) : 0;
+    const pctS = sp.total ? Math.round((sp.got/sp.total)*100) : 0;
+    html += `<div class="stats-card">
+      <div class="stats-card-title">Progreso Total</div>
       <div class="stats-big-num">${pct}%</div>
       <div class="stats-big-label">${gs.got} de ${gs.total} figuritas obtenidas</div>
     </div>
@@ -1515,64 +1716,120 @@ function renderStats() {
       </div>
     </div>
     <div class="stats-card">
-      <div class="stats-card-title">Por Grupo</div>
-  `;
-  for (const g of GROUPS) {
-    let got=0, total=0;
-    for (const c of g.countries) { const s=countryStats(c.code); got+=s.got; total+=s.total; }
-    const pctG = total ? Math.round((got/total)*100) : 0;
-    html += `
-      <div class="stats-group-row">
+      <div class="stats-card-title">Selecciones</div>
+      <div class="stats-big-num" style="font-size:36px">${pctN}%</div>
+      <div class="stats-big-label">${ns.got}/${ns.total} figuritas</div>
+    </div>
+    <div class="stats-card">
+      <div class="stats-card-title">⭐ Especiales</div>
+      <div class="stats-big-num" style="font-size:36px">${pctS}%</div>
+      <div class="stats-big-label">${sp.got}/${sp.total} figuritas</div>
+    </div>
+    <div class="stats-card"><div class="stats-card-title">Por Grupo</div>`;
+    for (const g of GROUPS) {
+      let got=0, total=0;
+      for (const cc of g.countries) { const s=countryStats(cc.code); got+=s.got; total+=s.total; }
+      const pctG = total ? Math.round((got/total)*100) : 0;
+      html += `<div class="stats-group-row">
         <span class="stats-group-letter">${g.id}</span>
         <div class="stats-group-bar"><div class="stats-group-fill" style="width:${pctG}%"></div></div>
         <span class="stats-group-pct">${pctG}%</span>
       </div>`;
-  }
-  html += `</div>`;
+    }
+    html += `</div>`;
 
-  // Per country table
-  html += `<div class="stats-card"><div class="stats-card-title">Por País</div><div class="country-stats-table">`;
-  for (const g of GROUPS) for (const c of g.countries) {
-    initCountry(c.code);
-    const arr = stickerData[c.code];
-    const obtained = [];
-    const extras = [];
-    arr.forEach((count, i) => {
-      if (count >= 1) obtained.push(i+1);
-      if (count >= 2) extras.push({n: i+1, x: count});
-    });
-    if (obtained.length === 0) continue;
-    html += `<div class="cst-row">
-      <div class="cst-name">${c.flag} ${c.name} <span style="font-size:10px;color:var(--text3)">(${obtained.length}/${STICKER_COUNT})</span></div>
-      <div class="cst-stickers">`;
-    for (const n of obtained) {
-      const ex = extras.find(e => e.n === n);
-      html += `<span class="cst-chip${ex ? ' extra' : ''}">${n}${ex ? `(×${ex.x})` : ''}</span>`;
+  } else if (tab === 'faltantes') {
+    html += `<div class="stats-card"><div class="stats-card-title">Figuritas Faltantes por País</div><div class="country-stats-table">`;
+    for (const g of GROUPS) for (const cc of g.countries) {
+      initCountry(cc.code);
+      const missing = stickerData[cc.code].map((v,i)=>v===0?i+1:null).filter(Boolean);
+      if (!missing.length) continue;
+      html += `<div class="cst-row"><div class="cst-name">${cc.flag} ${cc.name} <span style="font-size:10px;color:var(--text3)">(${missing.length} faltan)</span></div>
+        <div class="cst-stickers">${missing.map(n=>`<span class="cst-chip" style="opacity:0.5">${n}</span>`).join('')}</div></div>`;
+    }
+    // specials missing
+    initCountry('SPEC');
+    const spMissing = stickerData['SPEC'].map((v,i)=>v===0?SPECIALS.stickers[i]:null).filter(Boolean);
+    if (spMissing.length) {
+      html += `<div class="cst-row"><div class="cst-name">⭐ Especiales</div>
+        <div class="cst-stickers">${spMissing.map(n=>`<span class="cst-chip" style="opacity:0.5">${n}</span>`).join('')}</div></div>`;
     }
     html += `</div></div>`;
-  }
-  html += `</div></div>`;
 
-  // Sección: Figuritas repetidas
-  html += `<div class="stats-card"><div class="stats-card-title">🔁 Figuritas Repetidas</div><div class="country-stats-table">`;
-  let hasAnyExtra = false;
-  for (const g of GROUPS) for (const cc of g.countries) {
-    initCountry(cc.code);
-    const arr = stickerData[cc.code];
-    const extras = [];
-    arr.forEach((count, i) => { if (count >= 2) extras.push({n: i+1, x: count - 1}); });
-    if (!extras.length) continue;
-    hasAnyExtra = true;
-    html += `<div class="cst-row">
-      <div class="cst-name">${cc.flag} ${cc.name}</div>
-      <div class="cst-stickers">`;
-    for (const e of extras) {
-      html += `<span class="cst-chip extra">${e.n} (×${e.x})</span>`;
+  } else if (tab === 'repetidas') {
+    html += `<div class="stats-card"><div class="stats-card-title">🔁 Figuritas Repetidas</div><div class="country-stats-table">`;
+    let hasAny = false;
+    for (const g of GROUPS) for (const cc of g.countries) {
+      initCountry(cc.code);
+      const extras = stickerData[cc.code].map((v,i)=>v>=2?{n:i+1,x:v-1}:null).filter(Boolean);
+      if (!extras.length) continue;
+      hasAny = true;
+      html += `<div class="cst-row"><div class="cst-name">${cc.flag} ${cc.name}</div>
+        <div class="cst-stickers">${extras.map(e=>`<span class="cst-chip extra">${e.n} (×${e.x})</span>`).join('')}</div></div>`;
     }
+    // specials repeated
+    initCountry('SPEC');
+    const spExtras = stickerData['SPEC'].map((v,i)=>v>=2?{n:SPECIALS.stickers[i],x:v-1}:null).filter(Boolean);
+    if (spExtras.length) {
+      hasAny = true;
+      html += `<div class="cst-row"><div class="cst-name">⭐ Especiales</div>
+        <div class="cst-stickers">${spExtras.map(e=>`<span class="cst-chip extra">${e.n} (×${e.x})</span>`).join('')}</div></div>`;
+    }
+    if (!hasAny) html += `<div class="cst-empty">No tenés figuritas repetidas todavía.</div>`;
     html += `</div></div>`;
+
+  } else if (tab === 'especiales') {
+    initCountry('SPEC');
+    const arr = stickerData['SPEC'];
+    const sp = specialsStats();
+    const pctS = sp.total ? Math.round((sp.got/sp.total)*100) : 0;
+    html += `<div class="stats-card">
+      <div class="stats-card-title">⭐ Figuritas Especiales</div>
+      <div class="stats-big-num" style="font-size:40px">${pctS}%</div>
+      <div class="stats-big-label">${sp.got} de ${sp.total} obtenidas · ${sp.missing} faltantes · ${sp.extra} repetidas</div>
+    </div>
+    <div class="stats-card"><div class="stats-card-title">Detalle</div><div class="country-stats-table">
+      <div class="cst-row"><div class="cst-name">⭐ Especiales</div>
+        <div class="cst-stickers">${arr.map((v,i)=>v>0?`<span class="cst-chip${v>=2?' extra':''}">${SPECIALS.stickers[i]}${v>=2?'(×'+v+')':''}</span>`:'').join('')}</div>
+      </div>
+    </div></div>`;
+
+  } else if (tab === 'curiosas') {
+    const allC = [...ALL_COUNTRIES, SPECIALS];
+    let topTeam = null, topPct = -1, botTeam = null, botPct = 101;
+    let topGroup = null, topGPct = -1;
+    let mostRepNum = '', mostRepCount = 0, mostRepTeam = '';
+    let totalRep = 0;
+    for (const cc of ALL_COUNTRIES) {
+      const s = countryStats(cc.code);
+      const p = s.total ? (s.got/s.total)*100 : 0;
+      totalRep += s.extra;
+      if (p > topPct) { topPct = p; topTeam = cc; }
+      if (p < botPct && p >= 0) { botPct = p; botTeam = cc; }
+      initCountry(cc.code);
+      stickerData[cc.code].forEach((v,i) => {
+        if (v > mostRepCount) { mostRepCount = v; mostRepNum = i+1; mostRepTeam = cc.name; }
+      });
+    }
+    for (const g of GROUPS) {
+      let got=0,total=0;
+      for (const cc of g.countries){const s=countryStats(cc.code);got+=s.got;total+=s.total;}
+      const p = total?(got/total)*100:0;
+      if (p > topGPct) { topGPct = p; topGroup = g; }
+    }
+    const ns = normalStats();
+    const avgPct = Math.round(ns.got/ns.total*100)||0;
+    html += `<div class="stats-card"><div class="stats-card-title">🎲 Datos Curiosos</div>
+      <div class="country-stats-table">
+        ${topTeam?`<div class="cst-row"><div class="cst-name">🥇 Equipo más avanzado</div><div class="cst-stickers"><span class="cst-chip">${topTeam.flag} ${topTeam.name} (${Math.round(topPct)}%)</span></div></div>`:''}
+        ${botTeam?`<div class="cst-row"><div class="cst-name">🐢 Equipo menos avanzado</div><div class="cst-stickers"><span class="cst-chip">${botTeam.flag} ${botTeam.name} (${Math.round(botPct)}%)</span></div></div>`:''}
+        ${topGroup?`<div class="cst-row"><div class="cst-name">🏆 Grupo más completado</div><div class="cst-stickers"><span class="cst-chip">Grupo ${topGroup.id} (${Math.round(topGPct)}%)</span></div></div>`:''}
+        ${mostRepCount>1?`<div class="cst-row"><div class="cst-name">🔁 Figurita más repetida</div><div class="cst-stickers"><span class="cst-chip extra">Nº${mostRepNum} de ${mostRepTeam} (${mostRepCount} copias)</span></div></div>`:''}
+        <div class="cst-row"><div class="cst-name">📦 Total de repetidas</div><div class="cst-stickers"><span class="cst-chip">${totalRep} figuritas sobrantes</span></div></div>
+        <div class="cst-row"><div class="cst-name">📊 Promedio por equipo</div><div class="cst-stickers"><span class="cst-chip">${avgPct}% completado</span></div></div>
+      </div>
+    </div>`;
   }
-  if (!hasAnyExtra) html += `<div class="cst-empty">No tenés figuritas repetidas todavía.</div>`;
-  html += `</div></div>`;
 
   body.innerHTML = html;
 }
@@ -1643,13 +1900,15 @@ function initMenu() {
   document.getElementById('compare-close').addEventListener('click', () => document.getElementById('compare-panel').classList.remove('open'));
   document.getElementById('team-back').addEventListener('click', closeTeam);
   document.getElementById('team-prev').addEventListener('click', () => {
-    const idx = ALL_COUNTRIES.findIndex(c => c.code === currentCountryCode);
-    if (idx > 0) openTeam(ALL_COUNTRIES[idx - 1]);
+    const idx = ALL_NAVIGABLE.findIndex(c => c.code === currentCountryCode);
+    if (idx > 0) openTeam(ALL_NAVIGABLE[idx - 1]);
   });
   document.getElementById('team-next').addEventListener('click', () => {
-    const idx = ALL_COUNTRIES.findIndex(c => c.code === currentCountryCode);
-    if (idx < ALL_COUNTRIES.length - 1) openTeam(ALL_COUNTRIES[idx + 1]);
+    const idx = ALL_NAVIGABLE.findIndex(c => c.code === currentCountryCode);
+    if (idx < ALL_NAVIGABLE.length - 1) openTeam(ALL_NAVIGABLE[idx + 1]);
   });
+  document.getElementById('extras-header').addEventListener('click', () => openTeam(SPECIALS));
+  document.getElementById('menu-share').addEventListener('click', () => { closeMenu(); openShareModal(); });
 }
 
 /* ═══════════════════════════════════════════════
@@ -1750,60 +2009,98 @@ function initLogin() {
 /* ═══════════════════════════════════════════════
    COMPARE
 ═══════════════════════════════════════════════ */
-function generateCompareCode() {
-  // Encode album data as base64 compact — only countries with stickers
-  const compact = {};
-  for (const g of GROUPS) for (const cc of g.countries) {
-    initCountry(cc.code);
-    const arr = stickerData[cc.code];
-    if (arr.some(v => v > 0)) compact[cc.code] = arr;
-  }
-  try {
-    return btoa(JSON.stringify(compact)).replace(/=/g, '');
-  } catch { return ''; }
+const FB_CODES = `https://firestore.googleapis.com/v1/projects/${FB_CONFIG.projectId}/databases/(default)/documents/compare_codes`;
+
+function makeShortCode() {
+  // 10 chars: timestamp base36 (5) + random (5) — collision-proof
+  const t = Date.now().toString(36).slice(-5).toUpperCase();
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let r = '';
+  for (let i = 0; i < 5; i++) r += chars[Math.floor(Math.random()*chars.length)];
+  return t + r;
 }
 
-function decodeCompareCode(code) {
+async function getOrCreateCompareCode(pw) {
+  // Buscar si ya existe un código para este álbum
   try {
-    const padded = code + '=='.slice(0, (4 - code.length % 4) % 4);
-    return JSON.parse(atob(padded));
+    const res = await fetch(
+      `https://firestore.googleapis.com/v1/projects/${FB_CONFIG.projectId}/databases/(default)/documents:runQuery`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          structuredQuery: {
+            from: [{ collectionId: 'compare_codes' }],
+            where: { fieldFilter: { field: { fieldPath: 'pw' }, op: 'EQUAL', value: { stringValue: pw } } },
+            limit: 1
+          }
+        })
+      }
+    );
+    if (res.ok) {
+      const rows = await res.json();
+      if (rows?.[0]?.document?.fields?.code?.stringValue) {
+        return rows[0].document.fields.code.stringValue;
+      }
+    }
+  } catch {}
+
+  // No existe — crear uno nuevo
+  const code = makeShortCode();
+  try {
+    await fetch(`${FB_CODES}/${code}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fields: {
+          pw:         { stringValue: pw },
+          code:       { stringValue: code },
+          created_at: { stringValue: new Date().toISOString() }
+        }
+      })
+    });
+  } catch {}
+  return code;
+}
+
+async function getAlbumByCompareCode(code) {
+  // Buscar la contraseña asociada al código
+  try {
+    const res = await fetch(`${FB_CODES}/${code.toUpperCase()}`, {
+      headers: { 'Content-Type': 'application/json' }
+    });
+    if (!res.ok) return null;
+    const doc = await res.json();
+    const pw = doc?.fields?.pw?.stringValue;
+    if (!pw) return null;
+    return await dbLoadAlbum(pw);
   } catch { return null; }
 }
 
 function renderCompareResults(otherData) {
   const wrap = document.getElementById('compare-results-wrap');
-  if (!otherData) {
-    wrap.innerHTML = '<div class="compare-section"><div class="compare-empty">Código inválido. Pedile a tu amigo que lo copie de nuevo.</div></div>';
+  if (!otherData || !Object.keys(otherData).length) {
+    wrap.innerHTML = '<div class="compare-section"><div class="compare-empty">Código inválido o ese álbum está vacío.</div></div>';
     return;
   }
 
-  // My extras that other needs
-  let iCanGive = [];
-  // Other extras that I need
-  let theyCanGive = [];
-
+  let iCanGive = [], theyCanGive = [];
   for (const g of GROUPS) for (const cc of g.countries) {
     initCountry(cc.code);
     const mine = stickerData[cc.code];
     const theirs = otherData[cc.code] || Array(STICKER_COUNT).fill(0);
-
     const give = [], receive = [];
     for (let i = 0; i < STICKER_COUNT; i++) {
-      const myCount = mine[i] || 0;
-      const theirCount = theirs[i] || 0;
-      if (myCount >= 2 && theirCount === 0) give.push(i + 1);
-      if (theirCount >= 2 && myCount === 0) receive.push(i + 1);
+      if ((mine[i]||0) >= 2 && (theirs[i]||0) === 0) give.push(i+1);
+      if ((theirs[i]||0) >= 2 && (mine[i]||0) === 0) receive.push(i+1);
     }
     if (give.length) iCanGive.push({cc, nums: give});
     if (receive.length) theyCanGive.push({cc, nums: receive});
   }
 
-  let html = '';
-
-  html += `<div class="compare-section">
+  let html = `<div class="compare-section">
     <div class="compare-section-title">✅ Vos podés darle</div>
-    <div class="compare-results">
-      <div class="compare-dir">`;
+    <div class="compare-dir">`;
   if (!iCanGive.length) {
     html += `<div class="compare-empty">No tenés repetidas que al otro le falten.</div>`;
   } else {
@@ -1814,12 +2111,11 @@ function renderCompareResults(otherData) {
       </div>`;
     }
   }
-  html += `</div></div></div>`;
+  html += `</div></div>`;
 
   html += `<div class="compare-section">
     <div class="compare-section-title">🎁 El otro puede darte</div>
-    <div class="compare-results">
-      <div class="compare-dir">`;
+    <div class="compare-dir">`;
   if (!theyCanGive.length) {
     html += `<div class="compare-empty">El otro no tiene repetidas que a vos te falten.</div>`;
   } else {
@@ -1830,38 +2126,180 @@ function renderCompareResults(otherData) {
       </div>`;
     }
   }
-  html += `</div></div></div>`;
+  html += `</div></div>`;
 
   wrap.innerHTML = html;
 }
 
-function openCompare() {
-  const panel = document.getElementById('compare-panel');
-  panel.classList.add('open');
-  const myCode = generateCompareCode();
-  document.getElementById('compare-my-code').textContent = myCode || '(álbum vacío)';
+async function openCompare() {
+  document.getElementById('compare-panel').classList.add('open');
+  document.getElementById('compare-my-code').textContent = 'Generando...';
   document.getElementById('compare-other-input').value = '';
   document.getElementById('compare-results-wrap').innerHTML = '';
+  const qrEl = document.getElementById('compare-qr');
+  qrEl.innerHTML = '';
+  const code = await getOrCreateCompareCode(albumPassword);
+  document.getElementById('compare-my-code').textContent = code || 'Error';
+  // Generate QR
+  if (code && typeof QRCode !== 'undefined') {
+    try {
+      new QRCode(qrEl, {
+        text: code,
+        width: 120, height: 120,
+        colorDark: '#0d1525', colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    } catch(e) { qrEl.innerHTML = ''; }
+  }
 }
 
 function initCompare() {
   document.getElementById('compare-share-btn').addEventListener('click', () => {
     const code = document.getElementById('compare-my-code').textContent;
-    if (navigator.clipboard && code) {
-      navigator.clipboard.writeText(code).then(() => showToast('¡Código copiado! 📋'));
-    } else {
-      showToast('Copiá el código manualmente');
+    if (code && code !== 'Generando...' && code !== 'Error') {
+      navigator.clipboard?.writeText(code).then(() => showToast('¡Código copiado! 📋'));
     }
   });
-  document.getElementById('compare-go-btn').addEventListener('click', () => {
-    const input = document.getElementById('compare-other-input').value.trim();
+  document.getElementById('compare-go-btn').addEventListener('click', async () => {
+    const input = document.getElementById('compare-other-input').value.trim().toUpperCase();
     if (!input) { showToast('Pegá el código del otro álbum'); return; }
-    const data = decodeCompareCode(input);
+    document.getElementById('compare-go-btn').textContent = '...';
+    const data = await getAlbumByCompareCode(input);
+    document.getElementById('compare-go-btn').textContent = 'Ver';
     renderCompareResults(data);
   });
   document.getElementById('compare-other-input').addEventListener('keydown', e => {
     if (e.key === 'Enter') document.getElementById('compare-go-btn').click();
   });
+}
+
+/* ═══════════════════════════════════════════════
+   SHARE PROGRESS MODAL
+═══════════════════════════════════════════════ */
+function openShareModal() {
+  const gs = globalStats(true);
+  const pct = gs.total ? Math.round((gs.got/gs.total)*100) : 0;
+  document.getElementById('sc-pct').textContent = pct + '%';
+  document.getElementById('sc-label').textContent = `${gs.got} de ${gs.total} figuritas obtenidas`;
+
+  let barsHtml = '';
+  for (const g of GROUPS) {
+    let got=0, total=0;
+    for (const cc of g.countries) { const s=countryStats(cc.code); got+=s.got; total+=s.total; }
+    const p = total ? Math.round((got/total)*100) : 0;
+    barsHtml += `<div class="share-bar-row">
+      <span class="share-bar-letter">${g.id}</span>
+      <div class="share-bar-track"><div class="share-bar-fill" style="width:${p}%"></div></div>
+      <span class="share-bar-pct">${p}%</span>
+    </div>`;
+  }
+  document.getElementById('sc-bars').innerHTML = barsHtml;
+  document.getElementById('sc-footer').textContent = `📋 Álbum FIFA 2026 · ${gs.missing} faltantes · ${gs.extra} repetidas`;
+  document.getElementById('share-modal').classList.remove('hidden');
+}
+
+function initShare() {
+  document.getElementById('share-close-btn').addEventListener('click', () => {
+    document.getElementById('share-modal').classList.add('hidden');
+  });
+  document.getElementById('share-copy-btn').addEventListener('click', () => {
+    const gs = globalStats(true);
+    const pct = gs.total ? Math.round((gs.got/gs.total)*100) : 0;
+    let lines = [`🏆 Mi Álbum FIFA 2026 — ${pct}% completado`, `✅ ${gs.got} obtenidas | ❌ ${gs.missing} faltantes | 🔁 ${gs.extra} repetidas`, ''];
+    for (const g of GROUPS) {
+      let got=0,total=0;
+      for (const cc of g.countries){const s=countryStats(cc.code);got+=s.got;total+=s.total;}
+      lines.push(`Grupo ${g.id}: ${got}/${total}`);
+    }
+    const text = lines.join('
+');
+    navigator.clipboard?.writeText(text).then(() => {
+      showToast('¡Progreso copiado! 📋');
+      document.getElementById('share-modal').classList.add('hidden');
+    });
+  });
+  document.getElementById('share-modal').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('share-modal'))
+      document.getElementById('share-modal').classList.add('hidden');
+  });
+}
+
+/* ═══════════════════════════════════════════════
+   CONFETTI
+═══════════════════════════════════════════════ */
+function launchConfetti() {
+  const canvas = document.getElementById('confetti-canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+  canvas.classList.add('show');
+  const pieces = Array.from({length: 60}, () => ({
+    x: Math.random() * canvas.width,
+    y: -10 - Math.random() * 40,
+    r: 4 + Math.random() * 6,
+    d: 1 + Math.random() * 2,
+    color: ['#f0b429','#2563eb','#22c55e','#ffd166','#fff'][Math.floor(Math.random()*5)],
+    tilt: Math.random() * 10 - 5,
+    tiltSpeed: 0.1 + Math.random() * 0.2
+  }));
+  let frame = 0;
+  function draw() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    for (const p of pieces) {
+      ctx.beginPath();
+      ctx.fillStyle = p.color;
+      ctx.ellipse(p.x, p.y, p.r, p.r/2, p.tilt, 0, Math.PI*2);
+      ctx.fill();
+      p.y += p.d; p.x += Math.sin(frame*0.02)*0.5;
+      p.tilt += p.tiltSpeed;
+    }
+    frame++;
+    if (frame < 120) requestAnimationFrame(draw);
+    else {
+      canvas.classList.remove('show');
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+    }
+  }
+  draw();
+}
+
+/* ═══════════════════════════════════════════════
+   BACKGROUND ANIMATION
+═══════════════════════════════════════════════ */
+function initBgAnimation() {
+  const canvas = document.getElementById('bg-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+  const particles = Array.from({length: 18}, () => ({
+    x: Math.random(), y: Math.random(),
+    r: 60 + Math.random() * 120,
+    dx: (Math.random()-0.5)*0.0003,
+    dy: (Math.random()-0.5)*0.0003,
+    color: Math.random() > 0.5 ? '37,99,235' : '240,180,41',
+    alpha: 0.03 + Math.random() * 0.05
+  }));
+  function draw() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    for (const p of particles) {
+      const grd = ctx.createRadialGradient(
+        p.x*canvas.width, p.y*canvas.height, 0,
+        p.x*canvas.width, p.y*canvas.height, p.r
+      );
+      grd.addColorStop(0, `rgba(${p.color},${p.alpha})`);
+      grd.addColorStop(1, `rgba(${p.color},0)`);
+      ctx.fillStyle = grd;
+      ctx.beginPath();
+      ctx.arc(p.x*canvas.width, p.y*canvas.height, p.r, 0, Math.PI*2);
+      ctx.fill();
+      p.x += p.dx; p.y += p.dy;
+      if (p.x<0||p.x>1) p.dx*=-1;
+      if (p.y<0||p.y>1) p.dy*=-1;
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
 }
 
 /* ═══════════════════════════════════════════════
@@ -1883,6 +2321,9 @@ async function init() {
   initPageSearch();
   initLogin();
   initCompare();
+  initStatsTabs();
+  initShare();
+  initBgAnimation();
 
   // Check if was already logged in
   const lastPw = localStorage.getItem('album2026_lastpw');
