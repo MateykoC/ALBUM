@@ -2211,8 +2211,7 @@ function initShare() {
       for (const cc of g.countries){const s=countryStats(cc.code);got+=s.got;total+=s.total;}
       lines.push(`Grupo ${g.id}: ${got}/${total}`);
     }
-    const text = lines.join('
-');
+    const text = lines.join('\n');
     navigator.clipboard?.writeText(text).then(() => {
       showToast('¡Progreso copiado! 📋');
       document.getElementById('share-modal').classList.add('hidden');
