@@ -903,6 +903,8 @@ input { font-family: var(--font-body); }
 <!-- Share Modal -->
 <div id="share-modal" class="hidden">
   <div class="share-modal-inner">
+
+    <!-- Sección 1: Compartir progreso (como antes) -->
     <div id="share-card">
       <div class="share-card-title">🏆 FIFA 2026</div>
       <div class="share-card-sub">MI ÁLBUM DE FIGURITAS</div>
@@ -913,6 +915,22 @@ input { font-family: var(--font-body); }
     </div>
     <div class="share-modal-btns">
       <button class="share-modal-btn" id="share-copy-btn">📋 Copiar texto</button>
+    </div>
+
+    <!-- Divider -->
+    <div style="height:1px;background:var(--border);margin:16px 0"></div>
+
+    <!-- Sección 2: Completar álbum juntos -->
+    <div style="padding:0 4px">
+      <div style="font-size:11px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">🤝 Completar álbum juntos</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:10px;line-height:1.6">
+        Compartí este código con alguien para que pueda editar este álbum con vos.
+      </div>
+      <div class="compare-code-box" id="share-album-code" style="font-size:18px;letter-spacing:4px;margin-bottom:8px;text-align:center">Cargando...</div>
+      <button class="share-modal-btn" id="share-album-copy-btn">📋 Copiar código de edición</button>
+    </div>
+
+    <div class="share-modal-btns" style="margin-top:12px">
       <button class="share-modal-btn secondary" id="share-close-btn">Cerrar</button>
     </div>
   </div>
@@ -1062,37 +1080,11 @@ input { font-family: var(--font-body); }
     <div class="compare-title">Comparar Álbum</div>
   </div>
   <div class="compare-body">
-
-    <!-- SECCIÓN: Completar juntos -->
-    <div class="compare-section" style="border-color:rgba(240,180,41,0.3);background:rgba(240,180,41,0.05)">
-      <div class="compare-section-title" style="color:var(--gold)">🤝 Completar álbum juntos</div>
-      <div style="font-size:12px;color:var(--text2);margin-bottom:10px;line-height:1.6">
-        Compartí tu código con alguien para que pueda editar este álbum con vos.
-      </div>
-      <div class="compare-code-box" id="share-album-code" style="font-size:18px;letter-spacing:4px;margin-bottom:8px">Cargando...</div>
-      <button class="compare-share-btn" id="share-album-copy-btn">📋 Copiar código de edición</button>
-
-      <!-- Vincular álbum viejo -->
-      <div id="link-old-section" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
-        <div style="font-size:11px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">¿Tenías un álbum con contraseña?</div>
-        <div style="font-size:12px;color:var(--text2);margin-bottom:8px;line-height:1.5">
-          Vinculá tu contraseña vieja y se migrará a tu cuenta. Después esa contraseña dejará de funcionar.
-        </div>
-        <div style="display:flex;gap:8px">
-          <input class="compare-input" id="link-old-input" placeholder="Tu contraseña vieja..." autocomplete="off" spellcheck="false" style="font-size:13px;letter-spacing:1px">
-          <button class="compare-btn" id="link-old-btn">Vincular</button>
-        </div>
-        <div id="link-old-msg" style="font-size:12px;margin-top:8px;min-height:16px"></div>
-      </div>
-    </div>
-
-    <!-- SECCIÓN: Código de comparación -->
     <div class="compare-section">
       <div class="compare-section-title">Tu código de comparación</div>
       <button class="compare-share-btn" id="compare-share-btn">📋 Copiar mi código</button>
       <div class="compare-code-box" id="compare-my-code"></div>
     </div>
-
     <div class="compare-section">
       <div class="compare-section-title">Comparar con otro álbum</div>
       <div class="compare-input-row">
@@ -1151,7 +1143,7 @@ input { font-family: var(--font-body); }
   </div>
   <div class="menu-item" id="menu-share">
     <span class="menu-icon">📤</span>
-    <span class="menu-label">Compartir progreso</span>
+    <span class="menu-label">Compartir álbum</span>
   </div>
   <div class="menu-divider"></div>
   <div class="menu-item" id="menu-darkmode">
@@ -2387,24 +2379,10 @@ function renderCompareResults(otherData) {
 async function openCompare() {
   document.getElementById('compare-panel').classList.add('open');
   document.getElementById('compare-my-code').textContent = 'Cargando...';
-  document.getElementById('share-album-code').textContent = 'Cargando...';
   document.getElementById('compare-other-input').value = '';
   document.getElementById('compare-results-wrap').innerHTML = '';
-
-  // Código de comparación (como siempre)
   const cmpCode = await getOrCreateCompareCode(albumPassword);
   document.getElementById('compare-my-code').textContent = cmpCode || 'Error';
-
-  // Código de edición compartida (solo si entró con Google)
-  if (currentUser) {
-    const shareCode = await getOrCreateShareCode(currentUser.uid, albumPassword);
-    document.getElementById('share-album-code').textContent = shareCode || 'Error';
-    document.getElementById('link-old-section').style.display = 'block';
-  } else {
-    // Entró con código compartido — mostrar el código que usó
-    document.getElementById('share-album-code').textContent = 'Solo el dueño puede ver este código';
-    document.getElementById('link-old-section').style.display = 'none';
-  }
 }
 
 function initCompare() {
@@ -2431,7 +2409,7 @@ function initCompare() {
 /* ═══════════════════════════════════════════════
    SHARE PROGRESS MODAL
 ═══════════════════════════════════════════════ */
-function openShareModal() {
+async function openShareModal() {
   const gs = globalStats(true);
   const pct = gs.total ? Math.round((gs.got/gs.total)*100) : 0;
   document.getElementById('sc-pct').textContent = pct + '%';
@@ -2451,6 +2429,16 @@ function openShareModal() {
   document.getElementById('sc-bars').innerHTML = barsHtml;
   document.getElementById('sc-footer').textContent = `📋 Álbum FIFA 2026 · ${gs.missing} faltantes · ${gs.extra} repetidas`;
   document.getElementById('share-modal').classList.remove('hidden');
+
+  // Cargar código de edición (solo si entró con Google)
+  const shareCodeEl = document.getElementById('share-album-code');
+  if (currentUser) {
+    shareCodeEl.textContent = 'Cargando...';
+    const shareCode = await getOrCreateShareCode(currentUser.uid, albumPassword);
+    shareCodeEl.textContent = shareCode || 'Error';
+  } else {
+    shareCodeEl.textContent = 'Solo el dueño puede ver este código';
+  }
 }
 
 function initShare() {
@@ -2613,14 +2601,7 @@ async function init() {
 }
 
 function initShareAlbumSection() {
-  // Vincular álbum viejo
-  document.getElementById('link-old-btn').addEventListener('click', () => {
-    linkOldAlbum(document.getElementById('link-old-input').value);
-  });
-  document.getElementById('link-old-input').addEventListener('keydown', e => {
-    if (e.key === 'Enter') linkOldAlbum(document.getElementById('link-old-input').value);
-  });
-  // Copiar código de edición
+  // Copiar código de edición (en el share modal)
   document.getElementById('share-album-copy-btn').addEventListener('click', () => {
     const code = document.getElementById('share-album-code').textContent;
     if (code && code !== 'Cargando...') {
