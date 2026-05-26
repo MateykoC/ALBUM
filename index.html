@@ -700,10 +700,21 @@ input { font-family: var(--font-body); }
 #share-modal {
   position: fixed; inset: 0; z-index: 400;
   background: rgba(0,0,0,0.8); backdrop-filter: blur(6px);
-  display: flex; align-items: center; justify-content: center; padding: 20px;
+  display: flex; align-items: flex-end; justify-content: center;
 }
 #share-modal.hidden { display: none; }
-.share-modal-inner { width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 12px; }
+.share-modal-inner {
+  width: 100%; max-width: 520px;
+  background: var(--bg2); border-radius: 20px 20px 0 0;
+  border: 1px solid var(--border); border-bottom: none;
+  max-height: 92dvh; overflow-y: auto;
+  padding: 16px 20px 32px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.share-modal-handle {
+  width: 36px; height: 4px; background: var(--border);
+  border-radius: 2px; margin: 0 auto 12px;
+}
 #share-card {
   background: linear-gradient(135deg, #0d1a3a 0%, #1a0a08 100%);
   border: 1px solid rgba(240,180,41,0.3);
@@ -903,6 +914,7 @@ input { font-family: var(--font-body); }
 <!-- Share Modal -->
 <div id="share-modal" class="hidden">
   <div class="share-modal-inner">
+    <div class="share-modal-handle"></div>
 
     <!-- Sección 1: Compartir progreso (como antes) -->
     <div id="share-card">
@@ -2096,6 +2108,7 @@ async function enterAlbum(pw, isNew = false) {
   setSyncState('');
   renderGroups();
   updateGlobalProgress();
+  history.pushState(null, '', location.href); // fijar estado para botón atrás
   if (!isNew) showToast(`¡Álbum cargado!`);
 }
 
@@ -2598,6 +2611,44 @@ async function init() {
   setTimeout(() => {
     if (!albumPassword) document.getElementById('login-screen').classList.remove('hidden');
   }, 2000);
+
+  // Manejar botón atrás del teléfono — cerrar panel/modal abierto, nunca ir a login
+  window.addEventListener('popstate', (e) => {
+    // Cerrar lo que esté abierto, en orden de prioridad
+    if (!document.getElementById('share-modal').classList.contains('hidden')) {
+      document.getElementById('share-modal').classList.add('hidden');
+      history.pushState(null, '', location.href); // volver a poner estado
+      return;
+    }
+    if (document.getElementById('compare-panel').classList.contains('open')) {
+      document.getElementById('compare-panel').classList.remove('open');
+      history.pushState(null, '', location.href);
+      return;
+    }
+    if (document.getElementById('stats-panel').classList.contains('open')) {
+      document.getElementById('stats-panel').classList.remove('open');
+      history.pushState(null, '', location.href);
+      return;
+    }
+    if (document.getElementById('team-panel').classList.contains('open')) {
+      document.getElementById('team-panel').classList.remove('open');
+      history.pushState(null, '', location.href);
+      return;
+    }
+    if (document.getElementById('menu-sheet').classList.contains('open')) {
+      document.getElementById('menu-sheet').classList.remove('open');
+      document.getElementById('menu-overlay').classList.remove('open');
+      history.pushState(null, '', location.href);
+      return;
+    }
+    // Si no hay nada abierto y hay álbum cargado, no hacer nada (no ir a login)
+    if (albumPassword) {
+      history.pushState(null, '', location.href);
+    }
+  });
+
+  // Poner estado inicial en historial para que popstate funcione
+  if (albumPassword) history.pushState(null, '', location.href);
 }
 
 function initShareAlbumSection() {
