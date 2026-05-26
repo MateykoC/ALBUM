@@ -8,11 +8,11 @@
 <meta property="og:type" content="website">
 <meta property="og:title" content="Álbum Virtual FIFA 2026 🏆">
 <meta property="og:description" content="Completá tu álbum del Mundial 2026. Cargá figuritas, encontrá repetidas e intercambiá con amigos.">
-<meta property="og:image" content="preview.jpg">
+<meta property="og:image" content="https://raw.githubusercontent.com/MateykoC/ALBUM/main/preview.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="preview.jpg">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/MateykoC/ALBUM/main/preview.jpg">
 <meta name="description" content="Álbum virtual de figuritas del Mundial FIFA 2026. Compartí con amigos y encontrá intercambios.">
 <!-- Favicon -->
 <link rel="icon" type="image/png" href="favicon.png">
@@ -21,6 +21,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;900&display=swap" rel="stylesheet">
 <!-- QR lib -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<!-- QR reader -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsqr/1.4.0/jsQR.min.js"></script>
 <style>
 /* ═══════════════════════════════════════════════
    VARIABLES & RESET
@@ -1012,6 +1014,13 @@ input { font-family: var(--font-body); }
       <div class="compare-input-row">
         <input class="compare-input" id="compare-other-input" placeholder="Pegá el código aquí..." autocomplete="off" spellcheck="false">
         <button class="compare-btn" id="compare-go-btn">Ver</button>
+      </div>
+      <button class="compare-share-btn" id="compare-scan-btn" style="margin-top:8px">📷 Escanear QR de un amigo</button>
+      <div id="qr-scanner-wrap" style="display:none;margin-top:10px;border-radius:10px;overflow:hidden;position:relative">
+        <video id="qr-video" style="width:100%;display:block;border-radius:10px" playsinline></video>
+        <canvas id="qr-canvas" style="display:none"></canvas>
+        <button id="qr-stop-btn" style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.6);color:#fff;border-radius:6px;padding:4px 10px;font-size:12px;font-weight:700">✕ Cerrar</button>
+        <div style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);font-size:11px;color:rgba(255,255,255,0.7);white-space:nowrap">Apuntá al QR del otro álbum</div>
       </div>
     </div>
     <div id="compare-results-wrap"></div>
@@ -2022,7 +2031,12 @@ function makeShortCode() {
 }
 
 async function getOrCreateCompareCode(pw) {
-  // Buscar si ya existe un código para este álbum
+  // 1. Primero buscar en localStorage (más rápido y confiable)
+  const lsKey = `album2026_cmpcode_${pw}`;
+  const cached = localStorage.getItem(lsKey);
+  if (cached) return cached;
+
+  // 2. Buscar en Firebase
   try {
     const res = await fetch(
       `https://firestore.googleapis.com/v1/projects/${FB_CONFIG.projectId}/databases/(default)/documents:runQuery`,
@@ -2040,13 +2054,15 @@ async function getOrCreateCompareCode(pw) {
     );
     if (res.ok) {
       const rows = await res.json();
-      if (rows?.[0]?.document?.fields?.code?.stringValue) {
-        return rows[0].document.fields.code.stringValue;
+      const found = rows?.[0]?.document?.fields?.code?.stringValue;
+      if (found) {
+        localStorage.setItem(lsKey, found); // cachear para próximas veces
+        return found;
       }
     }
   } catch {}
 
-  // No existe — crear uno nuevo
+  // 3. No existe — crear uno nuevo y guardarlo
   const code = makeShortCode();
   try {
     await fetch(`${FB_CODES}/${code}`, {
@@ -2060,6 +2076,7 @@ async function getOrCreateCompareCode(pw) {
         }
       })
     });
+    localStorage.setItem(lsKey, code); // cachear
   } catch {}
   return code;
 }
@@ -2172,6 +2189,58 @@ function initCompare() {
   document.getElementById('compare-other-input').addEventListener('keydown', e => {
     if (e.key === 'Enter') document.getElementById('compare-go-btn').click();
   });
+
+  // ── QR Scanner ──
+  let scannerStream = null;
+  let scannerAnimFrame = null;
+
+  function stopScanner() {
+    if (scannerStream) { scannerStream.getTracks().forEach(t => t.stop()); scannerStream = null; }
+    if (scannerAnimFrame) { cancelAnimationFrame(scannerAnimFrame); scannerAnimFrame = null; }
+    document.getElementById('qr-scanner-wrap').style.display = 'none';
+  }
+
+  document.getElementById('compare-scan-btn').addEventListener('click', async () => {
+    const wrap = document.getElementById('qr-scanner-wrap');
+    const video = document.getElementById('qr-video');
+    const canvas = document.getElementById('qr-canvas');
+    wrap.style.display = 'block';
+    try {
+      scannerStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment' }
+      });
+      video.srcObject = scannerStream;
+      await video.play();
+
+      const ctx = canvas.getContext('2d');
+      function scanFrame() {
+        if (video.readyState === video.HAVE_ENOUGH_DATA) {
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const code = typeof jsQR !== 'undefined' && jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'dontInvert' });
+          if (code && code.data) {
+            stopScanner();
+            const scanned = code.data.trim().toUpperCase();
+            document.getElementById('compare-other-input').value = scanned;
+            document.getElementById('compare-go-btn').click();
+            return;
+          }
+        }
+        scannerAnimFrame = requestAnimationFrame(scanFrame);
+      }
+      scanFrame();
+    } catch(e) {
+      stopScanner();
+      showToast('No se pudo acceder a la cámara');
+    }
+  });
+
+  document.getElementById('qr-stop-btn').addEventListener('click', stopScanner);
+
+  // Cerrar escáner si se cierra el panel
+  document.getElementById('compare-close').addEventListener('click', stopScanner);
 }
 
 /* ═══════════════════════════════════════════════
