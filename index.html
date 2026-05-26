@@ -8,21 +8,19 @@
 <meta property="og:type" content="website">
 <meta property="og:title" content="Álbum Virtual FIFA 2026 🏆">
 <meta property="og:description" content="Completá tu álbum del Mundial 2026. Cargá figuritas, encontrá repetidas e intercambiá con amigos.">
-<meta property="og:image" content="https://raw.githubusercontent.com/MateykoC/ALBUM/main/preview.jpg">
+<meta property="og:image" content="https://res.cloudinary.com/dpcni3wmj/image/upload/v1779762324/preview_ymcewh.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://raw.githubusercontent.com/MateykoC/ALBUM/main/preview.jpg">
+<meta name="twitter:image" content="https://res.cloudinary.com/dpcni3wmj/image/upload/v1779762324/preview_ymcewh.jpg">
 <meta name="description" content="Álbum virtual de figuritas del Mundial FIFA 2026. Compartí con amigos y encontrá intercambios.">
 <!-- Favicon -->
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="apple-touch-icon" href="favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;900&display=swap" rel="stylesheet">
-<!-- QR lib -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<!-- QR reader -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jsqr/1.4.0/jsQR.min.js"></script>
+
+
 <style>
 /* ═══════════════════════════════════════════════
    VARIABLES & RESET
@@ -701,9 +699,7 @@ input { font-family: var(--font-body); }
   border: 1px solid var(--border);
 }
 
-/* ── QR code in compare ── */
-.compare-qr-wrap { display: flex; justify-content: center; margin-top: 10px; }
-#compare-qr { background: white; padding: 10px; border-radius: 10px; display: inline-block; }
+
 
 .stats-card {
   background: var(--surface);
@@ -1007,7 +1003,7 @@ input { font-family: var(--font-body); }
       <div class="compare-section-title">Tu código de comparación</div>
       <button class="compare-share-btn" id="compare-share-btn">📋 Copiar mi código</button>
       <div class="compare-code-box" id="compare-my-code"></div>
-      <div class="compare-qr-wrap"><div id="compare-qr"></div></div>
+
     </div>
     <div class="compare-section">
       <div class="compare-section-title">Comparar con otro álbum</div>
@@ -1015,13 +1011,7 @@ input { font-family: var(--font-body); }
         <input class="compare-input" id="compare-other-input" placeholder="Pegá el código aquí..." autocomplete="off" spellcheck="false">
         <button class="compare-btn" id="compare-go-btn">Ver</button>
       </div>
-      <button class="compare-share-btn" id="compare-scan-btn" style="margin-top:8px">📷 Escanear QR de un amigo</button>
-      <div id="qr-scanner-wrap" style="display:none;margin-top:10px;border-radius:10px;overflow:hidden;position:relative">
-        <video id="qr-video" style="width:100%;display:block;border-radius:10px" playsinline></video>
-        <canvas id="qr-canvas" style="display:none"></canvas>
-        <button id="qr-stop-btn" style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.6);color:#fff;border-radius:6px;padding:4px 10px;font-size:12px;font-weight:700">✕ Cerrar</button>
-        <div style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);font-size:11px;color:rgba(255,255,255,0.7);white-space:nowrap">Apuntá al QR del otro álbum</div>
-      </div>
+
     </div>
     <div id="compare-results-wrap"></div>
   </div>
@@ -1235,40 +1225,32 @@ function fbDecodeDoc(doc) {
   return vals.map(v => parseInt(v.integerValue || v.doubleValue || 0));
 }
 
+// All country codes including specials
+const ALL_CODES = [
+  'MEX','RSA','KOR','CZE','CAN','BIH','QAT','SUI','BRA','MAR','HAI','SCO',
+  'USA','PAR','AUS','TUR','GER','CUW','CIV','ECU','NED','JPN','SWE','TUN',
+  'BEL','EGY','IRN','NZL','ESP','CPV','KSA','URU','FRA','SEN','IRQ','NOR',
+  'ARG','ALG','AUT','JOR','POR','COD','UZB','COL','ENG','CRO','GHA','PAN','SPEC'
+];
+
 async function dbLoadAlbum(pw) {
+  // Fetch each country doc directly — no index needed
   try {
-    // Query all docs where albumPassword field == pw
-    const res = await fetch(
-      `https://firestore.googleapis.com/v1/projects/${FB_CONFIG.projectId}/databases/(default)/documents:runQuery`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          structuredQuery: {
-            from: [{ collectionId: 'albums' }],
-            where: {
-              fieldFilter: {
-                field: { fieldPath: 'pw' },
-                op: 'EQUAL',
-                value: { stringValue: pw }
-              }
-            }
-          }
-        })
-      }
+    const fetches = ALL_CODES.map(code =>
+      fetch(`${FB_BASE}/${encodeURIComponent(pw + '_' + code)}`, {
+        headers: { 'Content-Type': 'application/json' }
+      }).then(r => r.ok ? r.json() : null).catch(() => null)
     );
-    if (!res.ok) return null;
-    const rows = await res.json();
-    if (!rows || !rows.length || !rows[0].document) return null;
+    const docs = await Promise.all(fetches);
     const data = {};
-    for (const row of rows) {
-      if (!row.document) continue;
-      const code = row.document.fields?.code?.stringValue;
-      const arr = row.document.fields?.stickers?.arrayValue?.values?.map(
+    docs.forEach((doc, i) => {
+      if (!doc || !doc.fields) return;
+      const arr = doc.fields?.stickers?.arrayValue?.values?.map(
         v => parseInt(v.integerValue || 0)
       );
-      if (code && arr) data[code] = arr;
-    }
+      // Guardamos aunque sea todo ceros — necesario para comparar correctamente
+      if (arr) data[ALL_CODES[i]] = arr;
+    });
     return Object.keys(data).length ? data : null;
   } catch { return null; }
 }
@@ -2031,52 +2013,57 @@ function makeShortCode() {
 }
 
 async function getOrCreateCompareCode(pw) {
-  // 1. Primero buscar en localStorage (más rápido y confiable)
-  const lsKey = `album2026_cmpcode_${pw}`;
-  const cached = localStorage.getItem(lsKey);
-  if (cached) return cached;
+  const LS_KEY = `album2026_cmpcode_${pw}`;
+  const pwDocId = 'pw_' + btoa(pw).replace(/=/g,'').slice(0,20);
 
-  // 2. Buscar en Firebase
+  // 1. Buscar SIEMPRE en Firebase primero — así el código es el mismo en todos los dispositivos
   try {
-    const res = await fetch(
-      `https://firestore.googleapis.com/v1/projects/${FB_CONFIG.projectId}/databases/(default)/documents:runQuery`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          structuredQuery: {
-            from: [{ collectionId: 'compare_codes' }],
-            where: { fieldFilter: { field: { fieldPath: 'pw' }, op: 'EQUAL', value: { stringValue: pw } } },
-            limit: 1
-          }
-        })
-      }
-    );
+    const res = await fetch(`${FB_CODES}/${encodeURIComponent(pwDocId)}`, {
+      headers: { 'Content-Type': 'application/json' }
+    });
     if (res.ok) {
-      const rows = await res.json();
-      const found = rows?.[0]?.document?.fields?.code?.stringValue;
+      const doc = await res.json();
+      const found = doc?.fields?.code?.stringValue;
       if (found) {
-        localStorage.setItem(lsKey, found); // cachear para próximas veces
+        localStorage.setItem(LS_KEY, found); // cachear localmente
         return found;
       }
     }
   } catch {}
 
-  // 3. No existe — crear uno nuevo y guardarlo
+  // 2. Si no está en Firebase, usar localStorage como fallback
+  const cached = localStorage.getItem(LS_KEY);
+  if (cached) {
+    // Intentar guardar en Firebase para que sea consistente
+    try {
+      await fetch(`${FB_CODES}/${encodeURIComponent(cached)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fields: { pw: { stringValue: pw }, code: { stringValue: cached } } })
+      });
+      await fetch(`${FB_CODES}/${encodeURIComponent(pwDocId)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fields: { pw: { stringValue: pw }, code: { stringValue: cached } } })
+      });
+    } catch {}
+    return cached;
+  }
+
+  // 3. Crear nuevo código y guardarlo en Firebase
   const code = makeShortCode();
   try {
-    await fetch(`${FB_CODES}/${code}`, {
+    await fetch(`${FB_CODES}/${encodeURIComponent(code)}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        fields: {
-          pw:         { stringValue: pw },
-          code:       { stringValue: code },
-          created_at: { stringValue: new Date().toISOString() }
-        }
-      })
+      body: JSON.stringify({ fields: { pw: { stringValue: pw }, code: { stringValue: code } } })
     });
-    localStorage.setItem(lsKey, code); // cachear
+    await fetch(`${FB_CODES}/${encodeURIComponent(pwDocId)}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fields: { pw: { stringValue: pw }, code: { stringValue: code } } })
+    });
+    localStorage.setItem(LS_KEY, code);
   } catch {}
   return code;
 }
@@ -2151,24 +2138,11 @@ function renderCompareResults(otherData) {
 
 async function openCompare() {
   document.getElementById('compare-panel').classList.add('open');
-  document.getElementById('compare-my-code').textContent = 'Generando...';
+  document.getElementById('compare-my-code').textContent = 'Cargando...';
   document.getElementById('compare-other-input').value = '';
   document.getElementById('compare-results-wrap').innerHTML = '';
-  const qrEl = document.getElementById('compare-qr');
-  qrEl.innerHTML = '';
   const code = await getOrCreateCompareCode(albumPassword);
   document.getElementById('compare-my-code').textContent = code || 'Error';
-  // Generate QR
-  if (code && typeof QRCode !== 'undefined') {
-    try {
-      new QRCode(qrEl, {
-        text: code,
-        width: 120, height: 120,
-        colorDark: '#0d1525', colorLight: '#ffffff',
-        correctLevel: QRCode.CorrectLevel.M
-      });
-    } catch(e) { qrEl.innerHTML = ''; }
-  }
 }
 
 function initCompare() {
@@ -2190,57 +2164,6 @@ function initCompare() {
     if (e.key === 'Enter') document.getElementById('compare-go-btn').click();
   });
 
-  // ── QR Scanner ──
-  let scannerStream = null;
-  let scannerAnimFrame = null;
-
-  function stopScanner() {
-    if (scannerStream) { scannerStream.getTracks().forEach(t => t.stop()); scannerStream = null; }
-    if (scannerAnimFrame) { cancelAnimationFrame(scannerAnimFrame); scannerAnimFrame = null; }
-    document.getElementById('qr-scanner-wrap').style.display = 'none';
-  }
-
-  document.getElementById('compare-scan-btn').addEventListener('click', async () => {
-    const wrap = document.getElementById('qr-scanner-wrap');
-    const video = document.getElementById('qr-video');
-    const canvas = document.getElementById('qr-canvas');
-    wrap.style.display = 'block';
-    try {
-      scannerStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment' }
-      });
-      video.srcObject = scannerStream;
-      await video.play();
-
-      const ctx = canvas.getContext('2d');
-      function scanFrame() {
-        if (video.readyState === video.HAVE_ENOUGH_DATA) {
-          canvas.width = video.videoWidth;
-          canvas.height = video.videoHeight;
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-          const code = typeof jsQR !== 'undefined' && jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'dontInvert' });
-          if (code && code.data) {
-            stopScanner();
-            const scanned = code.data.trim().toUpperCase();
-            document.getElementById('compare-other-input').value = scanned;
-            document.getElementById('compare-go-btn').click();
-            return;
-          }
-        }
-        scannerAnimFrame = requestAnimationFrame(scanFrame);
-      }
-      scanFrame();
-    } catch(e) {
-      stopScanner();
-      showToast('No se pudo acceder a la cámara');
-    }
-  });
-
-  document.getElementById('qr-stop-btn').addEventListener('click', stopScanner);
-
-  // Cerrar escáner si se cierra el panel
-  document.getElementById('compare-close').addEventListener('click', stopScanner);
 }
 
 /* ═══════════════════════════════════════════════
