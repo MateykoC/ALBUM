@@ -19,6 +19,26 @@
 <link rel="apple-touch-icon" href="favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;900&display=swap" rel="stylesheet">
+<!-- Firebase Auth SDK -->
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+  const firebaseApp = initializeApp({
+    apiKey: "AIzaSyAtGgLcQUCvznm1TKgnI0kngJXFKAvwgEM",
+    authDomain: "album-mundiall.firebaseapp.com",
+    projectId: "album-mundiall"
+  });
+  const auth = getAuth(firebaseApp);
+  const provider = new GoogleAuthProvider();
+  window._fbAuth = auth;
+  window._fbProvider = provider;
+  window._fbSignInWithPopup = signInWithPopup;
+  window._fbSignOut = signOut;
+  window._fbOnAuthStateChanged = onAuthStateChanged;
+  onAuthStateChanged(auth, (user) => {
+    if (window._onAuthReady) window._onAuthReady(user);
+  });
+</script>
 
 
 <style>
@@ -166,6 +186,19 @@ input { font-family: var(--font-body); }
 .login-btn:active { transform: scale(0.97); }
 .login-hint { font-size: 11px; color: var(--text3); line-height: 1.6; }
 .login-error { font-size: 12px; color: var(--red); margin-bottom: 12px; min-height: 16px; }
+#login-google-btn {
+  background: #fff;
+  color: #333;
+  font-size: 15px; font-weight: 700;
+  border-radius: var(--radius);
+  padding: 15px; width: 100%;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+  transition: transform 0.1s, box-shadow 0.2s;
+  letter-spacing: 0.5px;
+}
+#login-google-btn:active { transform: scale(0.97); }
+#login-google-btn:disabled { opacity: 0.6; }
 
 /* ═══════════════════════════════════════════════
    MAIN APP
@@ -900,13 +933,43 @@ input { font-family: var(--font-body); }
     <div class="login-logo">🏆</div>
     <div class="login-title">FIFA 2026</div>
     <div class="login-sub">Álbum Virtual de Figuritas</div>
-    <div class="login-label">Contraseña del álbum</div>
-    <input class="login-input" id="login-input" type="text" placeholder="mi-album-secreto" maxlength="50" autocomplete="off" autocorrect="off" spellcheck="false">
-    <div class="login-error" id="login-error"></div>
-    <button class="login-btn" id="login-btn">Entrar al Álbum</button>
-    <div class="login-hint">
-      Ingresá una contraseña para entrar a tu álbum.<br>Si no existe, se crea automáticamente.<br>Compartí la contraseña con amigos para colaborar.
+
+    <!-- Panel A: opciones principales -->
+    <div id="login-panel-main">
+      <button class="login-btn" id="login-google-btn">
+        <span style="font-size:18px;vertical-align:middle;margin-right:8px">🔑</span> Entrar con Google
+      </button>
+      <div style="display:flex;align-items:center;gap:10px;margin:10px 0">
+        <div style="flex:1;height:1px;background:rgba(255,255,255,0.1)"></div>
+        <span style="font-size:10px;color:var(--text3);letter-spacing:1px">O</span>
+        <div style="flex:1;height:1px;background:rgba(255,255,255,0.1)"></div>
+      </div>
+      <div class="login-label">Tengo un código de álbum compartido</div>
+      <input class="login-input" id="login-code-input" type="text" placeholder="XXXX-XXXX-XXXX" maxlength="14" autocomplete="off" autocorrect="off" spellcheck="false">
+      <div class="login-error" id="login-error"></div>
+      <button class="login-btn" id="login-code-btn" style="background:linear-gradient(135deg,rgba(240,180,41,0.3),rgba(240,180,41,0.15));border:1.5px solid rgba(240,180,41,0.4);color:var(--gold);box-shadow:none">
+        Entrar con código
+      </button>
+      <div class="login-hint" style="margin-top:12px">
+        Entrá con Google para crear tu álbum.<br>Si alguien te compartió un código, usalo para editar juntos.
+      </div>
     </div>
+
+    <!-- Panel B: álbum creado (mostrar código) -->
+    <div id="login-panel-created" style="display:none">
+      <div style="font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.6">
+        ✅ ¡Álbum creado! Este es tu código para compartir con quien quieras que complete el álbum con vos:
+      </div>
+      <div id="login-new-code" style="background:rgba(240,180,41,0.08);border:2px solid rgba(240,180,41,0.5);border-radius:12px;padding:16px;font-family:monospace;font-size:24px;font-weight:700;color:var(--gold);letter-spacing:4px;text-align:center;margin-bottom:8px"></div>
+      <div style="font-size:11px;color:var(--red);margin-bottom:16px;line-height:1.6">
+        ⚠️ Guardá este código. Es la única forma de que otros puedan editar tu álbum.
+      </div>
+      <button class="login-btn" id="login-copy-code-btn">📋 Copiar código</button>
+      <button class="login-btn" id="login-enter-btn" style="background:var(--surface2);border:1px solid var(--border);color:var(--text2);box-shadow:none;margin-top:6px">
+        Entrar al álbum →
+      </button>
+    </div>
+
   </div>
 </div>
 
@@ -999,19 +1062,43 @@ input { font-family: var(--font-body); }
     <div class="compare-title">Comparar Álbum</div>
   </div>
   <div class="compare-body">
+
+    <!-- SECCIÓN: Completar juntos -->
+    <div class="compare-section" style="border-color:rgba(240,180,41,0.3);background:rgba(240,180,41,0.05)">
+      <div class="compare-section-title" style="color:var(--gold)">🤝 Completar álbum juntos</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:10px;line-height:1.6">
+        Compartí tu código con alguien para que pueda editar este álbum con vos.
+      </div>
+      <div class="compare-code-box" id="share-album-code" style="font-size:18px;letter-spacing:4px;margin-bottom:8px">Cargando...</div>
+      <button class="compare-share-btn" id="share-album-copy-btn">📋 Copiar código de edición</button>
+
+      <!-- Vincular álbum viejo -->
+      <div id="link-old-section" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+        <div style="font-size:11px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">¿Tenías un álbum con contraseña?</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:8px;line-height:1.5">
+          Vinculá tu contraseña vieja y se migrará a tu cuenta. Después esa contraseña dejará de funcionar.
+        </div>
+        <div style="display:flex;gap:8px">
+          <input class="compare-input" id="link-old-input" placeholder="Tu contraseña vieja..." autocomplete="off" spellcheck="false" style="font-size:13px;letter-spacing:1px">
+          <button class="compare-btn" id="link-old-btn">Vincular</button>
+        </div>
+        <div id="link-old-msg" style="font-size:12px;margin-top:8px;min-height:16px"></div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN: Código de comparación -->
     <div class="compare-section">
       <div class="compare-section-title">Tu código de comparación</div>
       <button class="compare-share-btn" id="compare-share-btn">📋 Copiar mi código</button>
       <div class="compare-code-box" id="compare-my-code"></div>
-
     </div>
+
     <div class="compare-section">
       <div class="compare-section-title">Comparar con otro álbum</div>
       <div class="compare-input-row">
         <input class="compare-input" id="compare-other-input" placeholder="Pegá el código aquí..." autocomplete="off" spellcheck="false">
         <button class="compare-btn" id="compare-go-btn">Ver</button>
       </div>
-
     </div>
     <div id="compare-results-wrap"></div>
   </div>
@@ -1559,11 +1646,11 @@ function updateStickerCard(card, code, idx, labels=null) {
 
   btnPlus.addEventListener('click', (e) => {
     e.stopPropagation();
-    handleSticker(code, idx, 1, card);
+    handleSticker(code, idx, 1, card, labels);
   });
   btnMinus.addEventListener('click', (e) => {
     e.stopPropagation();
-    handleSticker(code, idx, -1, card);
+    handleSticker(code, idx, -1, card, labels);
   });
 }
 
@@ -1937,65 +2024,226 @@ function showToast(msg) {
 /* ═══════════════════════════════════════════════
    LOGIN & LOGOUT
 ═══════════════════════════════════════════════ */
-function logout() {
-  albumPassword = '';
-  stickerData = {};
-  document.getElementById('app').classList.add('hidden');
-  document.getElementById('login-screen').classList.remove('hidden');
-  document.getElementById('login-input').value = '';
-  document.getElementById('login-error').textContent = '';
+
+// Colección para mapear shareCode → albumPassword
+const FB_SHARE = `https://firestore.googleapis.com/v1/projects/${FB_CONFIG.projectId}/databases/(default)/documents/share_codes`;
+// Colección para mapear uid Google → albumPassword
+const FB_USERS = `https://firestore.googleapis.com/v1/projects/${FB_CONFIG.projectId}/databases/(default)/documents/users`;
+
+let currentUser = null; // usuario Google logueado
+
+// Genera código de 12 chars con guiones: XXXX-XXXX-XXXX
+function generateShareCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '';
+  for (let i = 0; i < 12; i++) {
+    if (i === 4 || i === 8) code += '-';
+    code += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return code;
 }
 
-async function login(pw) {
-  albumPassword = pw.trim();
-  if (!albumPassword) {
-    document.getElementById('login-error').textContent = 'Ingresá una contraseña.';
-    return;
-  }
-  document.getElementById('login-btn').textContent = 'Cargando...';
-  document.getElementById('login-btn').disabled = true;
+// Obtener o crear el shareCode de edición para este álbum (ligado al uid)
+async function getOrCreateShareCode(uid, pw) {
+  const LS_KEY = `album2026_sharecode_${uid}`;
+  // 1. Buscar en Firebase
+  try {
+    const res = await fetch(`${FB_USERS}/${encodeURIComponent(uid)}`, {
+      headers: { 'Content-Type': 'application/json' }
+    });
+    if (res.ok) {
+      const doc = await res.json();
+      const found = doc?.fields?.shareCode?.stringValue;
+      if (found) { localStorage.setItem(LS_KEY, found); return found; }
+    }
+  } catch {}
+  // 2. localStorage fallback
+  const cached = localStorage.getItem(LS_KEY);
+  if (cached) return cached;
+  // 3. Crear nuevo
+  const code = generateShareCode();
+  try {
+    // Guardar en users: uid → { pw, shareCode }
+    await fetch(`${FB_USERS}/${encodeURIComponent(uid)}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fields: {
+        pw: { stringValue: pw },
+        shareCode: { stringValue: code }
+      }})
+    });
+    // Guardar en share_codes: code → { uid, pw }
+    await fetch(`${FB_SHARE}/${encodeURIComponent(code)}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fields: {
+        uid: { stringValue: uid },
+        pw:  { stringValue: pw }
+      }})
+    });
+    localStorage.setItem(LS_KEY, code);
+  } catch {}
+  return code;
+}
 
-  // 1. Intentar cargar desde Firebase
+// Entrar al álbum después de autenticar
+async function enterAlbum(pw, isNew = false) {
+  albumPassword = pw;
   let loaded = false;
   const fbData = await dbLoadAlbum(albumPassword);
-  if (fbData && Object.keys(fbData).length) {
-    stickerData = fbData;
-    loaded = true;
-  }
-
-  // 2. Si no hay datos en Firebase, intentar migrar desde Supabase
+  if (fbData && Object.keys(fbData).length) { stickerData = fbData; loaded = true; }
   if (!loaded) {
     const migrated = await migrateFromSupabase(albumPassword);
-    if (migrated && Object.keys(migrated).length) {
-      stickerData = migrated;
-      loaded = true;
-      showToast('Datos migrados correctamente ✓');
-    }
+    if (migrated && Object.keys(migrated).length) { stickerData = migrated; loaded = true; showToast('Datos migrados ✓'); }
   }
+  if (!loaded) { stickerData = loadLocal(albumPassword) || {}; }
 
-  // 3. Fallback: localStorage local
-  if (!loaded) {
-    const localData = loadLocal(albumPassword);
-    stickerData = localData || {};
-  }
-
-  document.getElementById('login-btn').textContent = 'Entrar al Álbum';
-  document.getElementById('login-btn').disabled = false;
   document.getElementById('login-screen').classList.add('hidden');
   document.getElementById('app').classList.remove('hidden');
   document.getElementById('header-album-name').textContent = `Álbum: ${albumPassword}`;
-
   setSyncState('');
   renderGroups();
   updateGlobalProgress();
-  showToast(`¡Álbum "${albumPassword}" cargado!`);
+  if (!isNew) showToast(`¡Álbum cargado!`);
+}
+
+// Login con Google
+async function loginWithGoogle() {
+  const btn = document.getElementById('login-google-btn');
+  btn.textContent = 'Conectando...';
+  btn.disabled = true;
+  try {
+    const result = await window._fbSignInWithPopup(window._fbAuth, window._fbProvider);
+    currentUser = result.user;
+    const uid = currentUser.uid;
+    localStorage.setItem('album2026_uid', uid);
+
+    // Buscar si ya tiene álbum en Firebase
+    let pw = null;
+    try {
+      const res = await fetch(`${FB_USERS}/${encodeURIComponent(uid)}`, {
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (res.ok) {
+        const doc = await res.json();
+        pw = doc?.fields?.pw?.stringValue || null;
+      }
+    } catch {}
+
+    let isNew = false;
+    if (!pw) {
+      // Álbum nuevo: crear contraseña interna basada en uid
+      pw = 'g_' + uid.slice(0, 20);
+      isNew = true;
+    }
+
+    // Obtener o crear shareCode
+    const shareCode = await getOrCreateShareCode(uid, pw);
+
+    if (isNew) {
+      // Mostrar código al usuario antes de entrar
+      document.getElementById('login-panel-main').style.display = 'none';
+      document.getElementById('login-panel-created').style.display = 'block';
+      document.getElementById('login-new-code').textContent = shareCode;
+      document.getElementById('login-copy-code-btn').onclick = () => {
+        navigator.clipboard?.writeText(shareCode).then(() => showToast('¡Código copiado! 📋'));
+      };
+      document.getElementById('login-enter-btn').onclick = () => enterAlbum(pw, true);
+    } else {
+      await enterAlbum(pw);
+    }
+  } catch (e) {
+    document.getElementById('login-error').textContent = 'Error al conectar con Google. Intentá de nuevo.';
+  }
+  btn.textContent = '🔑 Entrar con Google';
+  btn.disabled = false;
+}
+
+// Login con código compartido (12 chars)
+async function loginWithCode(code) {
+  const cleanCode = code.trim().toUpperCase();
+  if (!cleanCode) { document.getElementById('login-error').textContent = 'Ingresá un código.'; return; }
+  document.getElementById('login-code-btn').textContent = 'Verificando...';
+  document.getElementById('login-code-btn').disabled = true;
+  document.getElementById('login-error').textContent = '';
+  try {
+    const res = await fetch(`${FB_SHARE}/${encodeURIComponent(cleanCode)}`, {
+      headers: { 'Content-Type': 'application/json' }
+    });
+    if (!res.ok) throw new Error('not found');
+    const doc = await res.json();
+    const pw = doc?.fields?.pw?.stringValue;
+    if (!pw) throw new Error('no pw');
+    await enterAlbum(pw);
+  } catch {
+    document.getElementById('login-error').textContent = 'Código inválido. Verificá que esté bien escrito.';
+  }
+  document.getElementById('login-code-btn').textContent = 'Entrar con código';
+  document.getElementById('login-code-btn').disabled = false;
+}
+
+function logout() {
+  albumPassword = '';
+  stickerData = {};
+  currentUser = null;
+  if (window._fbSignOut && window._fbAuth) window._fbSignOut(window._fbAuth).catch(() => {});
+  document.getElementById('app').classList.add('hidden');
+  document.getElementById('login-panel-main').style.display = 'block';
+  document.getElementById('login-panel-created').style.display = 'none';
+  document.getElementById('login-screen').classList.remove('hidden');
+  document.getElementById('login-error').textContent = '';
+  document.getElementById('login-code-input').value = '';
 }
 
 function initLogin() {
-  const btn = document.getElementById('login-btn');
-  const input = document.getElementById('login-input');
-  btn.addEventListener('click', () => login(input.value));
-  input.addEventListener('keydown', e => { if (e.key==='Enter') login(input.value); });
+  document.getElementById('login-google-btn').addEventListener('click', loginWithGoogle);
+  document.getElementById('login-code-btn').addEventListener('click', () => {
+    loginWithCode(document.getElementById('login-code-input').value);
+  });
+  document.getElementById('login-code-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') loginWithCode(document.getElementById('login-code-input').value);
+  });
+}
+
+// Vincular álbum viejo con contraseña (en sección comparar)
+async function linkOldAlbum(oldPw) {
+  if (!currentUser) { showToast('Primero entrá con Google'); return; }
+  const uid = currentUser.uid;
+  const msg = document.getElementById('link-old-msg');
+  msg.style.color = 'var(--text2)';
+  msg.textContent = 'Verificando...';
+
+  // Verificar que el álbum viejo existe
+  const oldData = await dbLoadAlbum(oldPw.trim());
+  if (!oldData || !Object.keys(oldData).length) {
+    msg.style.color = 'var(--red)';
+    msg.textContent = 'No se encontró un álbum con esa contraseña.';
+    return;
+  }
+
+  // Migrar datos del álbum viejo al álbum Google actual
+  for (const [code, arr] of Object.entries(oldData)) {
+    // Guardar bajo la contraseña del usuario Google
+    await dbSaveCountry(albumPassword, code, arr);
+    // Actualizar datos locales
+    stickerData[code] = arr;
+  }
+
+  // Invalidar la contraseña vieja en Firebase (borrar sus docs o marcarla)
+  try {
+    await fetch(`${FB_USERS}/${encodeURIComponent('invalidated_' + btoa(oldPw.trim()).slice(0,16))}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fields: { invalidated: { booleanValue: true }, pw: { stringValue: oldPw.trim() } } })
+    });
+  } catch {}
+
+  saveLocal();
+  renderGroups();
+  updateGlobalProgress();
+  msg.style.color = 'var(--green)';
+  msg.textContent = '✅ ¡Álbum migrado! Tu contraseña vieja ya no funciona.';
+  document.getElementById('link-old-input').value = '';
 }
 
 /* ═══════════════════════════════════════════════
@@ -2139,10 +2387,24 @@ function renderCompareResults(otherData) {
 async function openCompare() {
   document.getElementById('compare-panel').classList.add('open');
   document.getElementById('compare-my-code').textContent = 'Cargando...';
+  document.getElementById('share-album-code').textContent = 'Cargando...';
   document.getElementById('compare-other-input').value = '';
   document.getElementById('compare-results-wrap').innerHTML = '';
-  const code = await getOrCreateCompareCode(albumPassword);
-  document.getElementById('compare-my-code').textContent = code || 'Error';
+
+  // Código de comparación (como siempre)
+  const cmpCode = await getOrCreateCompareCode(albumPassword);
+  document.getElementById('compare-my-code').textContent = cmpCode || 'Error';
+
+  // Código de edición compartida (solo si entró con Google)
+  if (currentUser) {
+    const shareCode = await getOrCreateShareCode(currentUser.uid, albumPassword);
+    document.getElementById('share-album-code').textContent = shareCode || 'Error';
+    document.getElementById('link-old-section').style.display = 'block';
+  } else {
+    // Entró con código compartido — mostrar el código que usó
+    document.getElementById('share-album-code').textContent = 'Solo el dueño puede ver este código';
+    document.getElementById('link-old-section').style.display = 'none';
+  }
 }
 
 function initCompare() {
@@ -2303,7 +2565,6 @@ function initBgAnimation() {
    INIT
 ═══════════════════════════════════════════════ */
 async function init() {
-  // Dark mode preference
   const darkPref = localStorage.getItem('album2026_dark');
   darkMode = darkPref === null ? true : darkPref === '1';
   applyDarkMode();
@@ -2316,23 +2577,56 @@ async function init() {
   initStatsTabs();
   initShare();
   initBgAnimation();
+  initShareAlbumSection();
 
-  // Check if was already logged in
-  const lastPw = localStorage.getItem('album2026_lastpw');
-
-  // Show loading for 1.5s then login
+  // Esperar loading
   await new Promise(r => setTimeout(r, 1600));
   document.getElementById('loading-screen').style.display = 'none';
-  document.getElementById('login-screen').classList.remove('hidden');
 
-  if (lastPw) {
-    document.getElementById('login-input').value = lastPw;
-  }
+  // Verificar si Firebase Auth ya tiene sesión activa
+  // _onAuthReady se llama desde el módulo cuando cambia el estado
+  window._onAuthReady = async (user) => {
+    if (user && !albumPassword) {
+      // Sesión Google activa, restaurar álbum
+      currentUser = user;
+      const uid = user.uid;
+      try {
+        const res = await fetch(`${FB_USERS}/${encodeURIComponent(uid)}`, {
+          headers: { 'Content-Type': 'application/json' }
+        });
+        if (res.ok) {
+          const doc = await res.json();
+          const pw = doc?.fields?.pw?.stringValue;
+          if (pw) { await enterAlbum(pw); return; }
+        }
+      } catch {}
+    }
+    if (!albumPassword) {
+      document.getElementById('login-screen').classList.remove('hidden');
+    }
+  };
 
-  document.getElementById('login-btn').addEventListener('click', () => {
-    const pw = document.getElementById('login-input').value;
-    if (pw) localStorage.setItem('album2026_lastpw', pw);
-  }, {once: false});
+  // Timeout: si Firebase tarda más de 2s, mostrar login igual
+  setTimeout(() => {
+    if (!albumPassword) document.getElementById('login-screen').classList.remove('hidden');
+  }, 2000);
+}
+
+function initShareAlbumSection() {
+  // Vincular álbum viejo
+  document.getElementById('link-old-btn').addEventListener('click', () => {
+    linkOldAlbum(document.getElementById('link-old-input').value);
+  });
+  document.getElementById('link-old-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') linkOldAlbum(document.getElementById('link-old-input').value);
+  });
+  // Copiar código de edición
+  document.getElementById('share-album-copy-btn').addEventListener('click', () => {
+    const code = document.getElementById('share-album-code').textContent;
+    if (code && code !== 'Cargando...') {
+      navigator.clipboard?.writeText(code).then(() => showToast('¡Código copiado! 📋'));
+    }
+  });
 }
 
 document.addEventListener('DOMContentLoaded', init);
