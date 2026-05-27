@@ -708,13 +708,23 @@ input { font-family: var(--font-body); }
   background: var(--bg2); border-radius: 20px 20px 0 0;
   border: 1px solid var(--border); border-bottom: none;
   max-height: 92dvh; overflow-y: auto;
-  padding: 16px 20px 32px;
-  display: flex; flex-direction: column; gap: 12px;
+  padding: 0 0 32px;
 }
-.share-modal-handle {
-  width: 36px; height: 4px; background: var(--border);
-  border-radius: 2px; margin: 0 auto 12px;
+.share-modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px 12px; border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; background: var(--bg2); z-index: 1;
 }
+.share-modal-header-title {
+  font-family: var(--font-display); font-size: 18px;
+  color: var(--text); letter-spacing: 1px;
+}
+.share-modal-close {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--surface2); color: var(--text2);
+  font-size: 18px; display: flex; align-items: center; justify-content: center;
+}
+.share-modal-body { padding: 16px 20px; display: flex; flex-direction: column; gap: 16px; }
 #share-card {
   background: linear-gradient(135deg, #0d1a3a 0%, #1a0a08 100%);
   border: 1px solid rgba(240,180,41,0.3);
@@ -914,36 +924,36 @@ input { font-family: var(--font-body); }
 <!-- Share Modal -->
 <div id="share-modal" class="hidden">
   <div class="share-modal-inner">
-    <div class="share-modal-handle"></div>
-
-    <!-- Sección 1: Compartir progreso (como antes) -->
-    <div id="share-card">
-      <div class="share-card-title">🏆 FIFA 2026</div>
-      <div class="share-card-sub">MI ÁLBUM DE FIGURITAS</div>
-      <div class="share-card-pct" id="sc-pct">0%</div>
-      <div class="share-card-pct-label" id="sc-label">figuritas obtenidas</div>
-      <div class="share-card-bars" id="sc-bars"></div>
-      <div class="share-card-footer" id="sc-footer"></div>
+    <div class="share-modal-header">
+      <div class="share-modal-header-title">Compartir álbum</div>
+      <button class="share-modal-close" id="share-close-btn">✕</button>
     </div>
-    <div class="share-modal-btns">
-      <button class="share-modal-btn" id="share-copy-btn">📋 Copiar texto</button>
-    </div>
+    <div class="share-modal-body">
 
-    <!-- Divider -->
-    <div style="height:1px;background:var(--border);margin:16px 0"></div>
-
-    <!-- Sección 2: Completar álbum juntos -->
-    <div style="padding:0 4px">
-      <div style="font-size:11px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">🤝 Completar álbum juntos</div>
-      <div style="font-size:12px;color:var(--text2);margin-bottom:10px;line-height:1.6">
-        Compartí este código con alguien para que pueda editar este álbum con vos.
+      <!-- Sección 1: Compartir progreso -->
+      <div id="share-card">
+        <div class="share-card-title">🏆 FIFA 2026</div>
+        <div class="share-card-sub">MI ÁLBUM DE FIGURITAS</div>
+        <div class="share-card-pct" id="sc-pct">0%</div>
+        <div class="share-card-pct-label" id="sc-label">figuritas obtenidas</div>
+        <div class="share-card-bars" id="sc-bars"></div>
+        <div class="share-card-footer" id="sc-footer"></div>
       </div>
-      <div class="compare-code-box" id="share-album-code" style="font-size:18px;letter-spacing:4px;margin-bottom:8px;text-align:center">Cargando...</div>
-      <button class="share-modal-btn" id="share-album-copy-btn">📋 Copiar código de edición</button>
-    </div>
+      <button class="share-modal-btn" id="share-copy-btn">📋 Copiar texto para compartir</button>
 
-    <div class="share-modal-btns" style="margin-top:12px">
-      <button class="share-modal-btn secondary" id="share-close-btn">Cerrar</button>
+      <!-- Divider -->
+      <div style="height:1px;background:var(--border)"></div>
+
+      <!-- Sección 2: Completar álbum juntos -->
+      <div>
+        <div style="font-size:11px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">🤝 Completar álbum juntos</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:10px;line-height:1.6">
+          Compartí este código con alguien para que pueda editar este álbum con vos.
+        </div>
+        <div class="compare-code-box" id="share-album-code" style="font-size:18px;letter-spacing:4px;margin-bottom:10px;text-align:center">Cargando...</div>
+        <button class="share-modal-btn" id="share-album-copy-btn">📋 Copiar código de edición</button>
+      </div>
+
     </div>
   </div>
 </div>
@@ -1580,6 +1590,7 @@ function openTeam(country, skipAnim) {
 
   const panel = document.getElementById('team-panel');
   panel.classList.add('open');
+  history.pushState({ panel: 'team' }, '', location.href);
 
   // update nav buttons
   const idx = ALL_NAVIGABLE.findIndex(c => c.code === country.code);
@@ -2443,14 +2454,39 @@ async function openShareModal() {
   document.getElementById('sc-footer').textContent = `📋 Álbum FIFA 2026 · ${gs.missing} faltantes · ${gs.extra} repetidas`;
   document.getElementById('share-modal').classList.remove('hidden');
 
-  // Cargar código de edición (solo si entró con Google)
+  // Cargar código de edición — siempre visible para quien lo tenga
   const shareCodeEl = document.getElementById('share-album-code');
+  shareCodeEl.textContent = 'Cargando...';
   if (currentUser) {
-    shareCodeEl.textContent = 'Cargando...';
     const shareCode = await getOrCreateShareCode(currentUser.uid, albumPassword);
     shareCodeEl.textContent = shareCode || 'Error';
   } else {
-    shareCodeEl.textContent = 'Solo el dueño puede ver este código';
+    // Entró con código compartido — buscar el shareCode en Firebase por pw
+    try {
+      const res = await fetch(`${FB_SHARE}?pageSize=1`, {
+        headers: { 'Content-Type': 'application/json' }
+      });
+      // Buscar por pw en share_codes
+      const listRes = await fetch(
+        `https://firestore.googleapis.com/v1/projects/${FB_CONFIG.projectId}/databases/(default)/documents:runQuery`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            structuredQuery: {
+              from: [{ collectionId: 'share_codes' }],
+              where: { fieldFilter: { field: { fieldPath: 'pw' }, op: 'EQUAL', value: { stringValue: albumPassword } } },
+              limit: 1
+            }
+          })
+        }
+      );
+      const rows = await listRes.json();
+      const code = rows?.[0]?.document?.fields?.code?.stringValue;
+      shareCodeEl.textContent = code || 'Error al cargar';
+    } catch {
+      shareCodeEl.textContent = 'Error al cargar';
+    }
   }
 }
 
