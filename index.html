@@ -1805,9 +1805,7 @@ function shareRepetidas() {
   lines.push('_¿Querés alguna? ¡Hablame! 📲_');
   lines.push(`_Armá tu álbum: ${PAGE_URL}_`);
 
-  const msg = lines.join('\n');
-  const url = `https://wa.me/?text=${encodeURIComponent(msg)}`;
-  window.open(url, '_blank');
+  openWhatsApp(lines.join('\n'));
 }
 
 function initStatsTabs() {
@@ -2543,10 +2541,16 @@ async function openShareModal() {
   }
 }
 
+function openWhatsApp(text) {
+  // Usar location.href para evitar bloqueo de popups en móvil
+  location.href = `https://wa.me/?text=${encodeURIComponent(text)}`;
+}
+
 function initShare() {
   document.getElementById('share-close-btn').addEventListener('click', () => {
     document.getElementById('share-modal').classList.add('hidden');
   });
+
   document.getElementById('share-copy-btn').addEventListener('click', () => {
     const gs = globalStats(true);
     const pct = gs.total ? Math.round((gs.got/gs.total)*100) : 0;
@@ -2562,11 +2566,19 @@ function initShare() {
     }
     lines.push('');
     lines.push(`📲 Armá tu álbum: ${PAGE_URL}`);
-    const text = lines.join('\n');
-    const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
-    window.open(url, '_blank');
     document.getElementById('share-modal').classList.add('hidden');
+    openWhatsApp(lines.join('\n'));
   });
+
+  document.getElementById('share-album-copy-btn').addEventListener('click', () => {
+    const code = document.getElementById('share-album-code').textContent;
+    if (code && code !== 'Cargando...' && code !== 'Error') {
+      const msg = `🏆 *Te invito a completar mi Álbum FIFA 2026 conmigo*\n\nUsá este código para entrar y editar juntos:\n*${code}*\n\n📲 Entrá acá: ${PAGE_URL}`;
+      document.getElementById('share-modal').classList.add('hidden');
+      openWhatsApp(msg);
+    }
+  });
+
   document.getElementById('share-modal').addEventListener('click', (e) => {
     if (e.target === document.getElementById('share-modal'))
       document.getElementById('share-modal').classList.add('hidden');
@@ -2766,20 +2778,7 @@ async function init() {
 }
 
 function initShareAlbumSection() {
-  // Copiar código de edición (en el share modal)
-  document.getElementById('share-album-copy-btn').addEventListener('click', () => {
-    const code = document.getElementById('share-album-code').textContent;
-    if (code && code !== 'Cargando...' && code !== 'Error') {
-      const msg = `🏆 *Te invito a completar mi Álbum FIFA 2026 conmigo*
-
-Usá este código para entrar y editar juntos:
-*${code}*
-
-📲 Entrá acá: ${PAGE_URL}`;
-      const url = `https://wa.me/?text=${encodeURIComponent(msg)}`;
-      window.open(url, '_blank');
-    }
-  });
+  // listeners manejados en initShare
 }
 
 document.addEventListener('DOMContentLoaded', init);
