@@ -941,11 +941,9 @@ input { font-family: var(--font-body); }
       </div>
       <button class="share-modal-btn" id="share-copy-btn">📋 Copiar texto para compartir</button>
 
-      <!-- Divider -->
-      <div style="height:1px;background:var(--border)"></div>
-
-      <!-- Sección 2: Completar álbum juntos -->
-      <div>
+      <!-- Sección 2: Completar álbum juntos (solo dueño) -->
+      <div id="share-juntos-section">
+        <div style="height:1px;background:var(--border);margin-bottom:16px"></div>
         <div style="font-size:11px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">🤝 Completar álbum juntos</div>
         <div style="font-size:12px;color:var(--text2);margin-bottom:10px;line-height:1.6">
           Compartí este código con alguien para que pueda editar este álbum con vos.
@@ -1774,6 +1772,44 @@ function openStats() {
   document.getElementById('stats-panel').classList.add('open');
 }
 
+function shareRepetidas() {
+  // Generar mensaje de texto con las repetidas por país
+  const lines = [];
+  lines.push('🏆 *Mis figuritas repetidas - FIFA 2026*');
+  lines.push('');
+
+  let hasAny = false;
+  for (const g of GROUPS) {
+    for (const cc of g.countries) {
+      initCountry(cc.code);
+      const extras = stickerData[cc.code].map((v,i) => v >= 2 ? `${i+1}(×${v-1})` : null).filter(Boolean);
+      if (!extras.length) continue;
+      hasAny = true;
+      lines.push(`${cc.flag} *${cc.name}:* ${extras.join(', ')}`);
+    }
+  }
+
+  initCountry('SPEC');
+  const spExtras = stickerData['SPEC'].map((v,i) => v >= 2 ? `${SPECIALS.stickers[i]}(×${v-1})` : null).filter(Boolean);
+  if (spExtras.length) {
+    hasAny = true;
+    lines.push(`⭐ *Especiales:* ${spExtras.join(', ')}`);
+  }
+
+  if (!hasAny) {
+    showToast('No tenés repetidas para compartir');
+    return;
+  }
+
+  lines.push('');
+  lines.push('_¿Querés alguna? ¡Hablame! 📲_');
+  lines.push(`_Armá tu álbum: ${PAGE_URL}_`);
+
+  const msg = lines.join('\n');
+  const url = `https://wa.me/?text=${encodeURIComponent(msg)}`;
+  window.open(url, '_blank');
+}
+
 function initStatsTabs() {
   document.querySelectorAll('.stats-tab').forEach(tab => {
     tab.addEventListener('click', () => {
@@ -1851,7 +1887,14 @@ function renderStats(tab='general') {
     html += `</div></div>`;
 
   } else if (tab === 'repetidas') {
-    html += `<div class="stats-card"><div class="stats-card-title">🔁 Figuritas Repetidas</div><div class="country-stats-table">`;
+    html += `<div class="stats-card">
+      <div class="stats-card-title" style="display:flex;align-items:center;justify-content:space-between">
+        <span>🔁 Figuritas Repetidas</span>
+        <button onclick="shareRepetidas()" style="background:rgba(37,211,102,0.15);border:1px solid rgba(37,211,102,0.4);color:#25d366;font-size:12px;font-weight:700;padding:6px 12px;border-radius:20px;letter-spacing:0.5px">
+          📤 Compartir
+        </button>
+      </div>
+      <div class="country-stats-table">`;
     let hasAny = false;
     for (const g of GROUPS) for (const cc of g.countries) {
       initCountry(cc.code);
@@ -2113,13 +2156,17 @@ async function enterAlbum(pw, isNew = false) {
   }
   if (!loaded) { stickerData = loadLocal(albumPassword) || {}; }
 
+  // Guardar sesión para restaurar al volver
+  localStorage.setItem('album2026_session_pw', pw);
+  if (currentUser) localStorage.setItem('album2026_session_uid', currentUser.uid);
+
   document.getElementById('login-screen').classList.add('hidden');
   document.getElementById('app').classList.remove('hidden');
   document.getElementById('header-album-name').textContent = `Álbum: ${albumPassword}`;
   setSyncState('');
   renderGroups();
   updateGlobalProgress();
-  history.pushState(null, '', location.href); // fijar estado para botón atrás
+  history.pushState(null, '', location.href);
   if (!isNew) showToast(`¡Álbum cargado!`);
 }
 
@@ -2202,6 +2249,8 @@ function logout() {
   albumPassword = '';
   stickerData = {};
   currentUser = null;
+  localStorage.removeItem('album2026_session_pw');
+  localStorage.removeItem('album2026_session_uid');
   if (window._fbSignOut && window._fbAuth) window._fbSignOut(window._fbAuth).catch(() => {});
   document.getElementById('app').classList.add('hidden');
   document.getElementById('login-panel-main').style.display = 'block';
@@ -2454,6 +2503,10 @@ async function openShareModal() {
   document.getElementById('sc-footer').textContent = `📋 Álbum FIFA 2026 · ${gs.missing} faltantes · ${gs.extra} repetidas`;
   document.getElementById('share-modal').classList.remove('hidden');
 
+  // Mostrar sección "completar juntos" solo si es dueño (Google)
+  const juntosSection = document.getElementById('share-juntos-section');
+  juntosSection.style.display = currentUser ? 'block' : 'none';
+
   // Cargar código de edición — siempre visible para quien lo tenga
   const shareCodeEl = document.getElementById('share-album-code');
   shareCodeEl.textContent = 'Cargando...';
@@ -2497,17 +2550,22 @@ function initShare() {
   document.getElementById('share-copy-btn').addEventListener('click', () => {
     const gs = globalStats(true);
     const pct = gs.total ? Math.round((gs.got/gs.total)*100) : 0;
-    let lines = [`🏆 Mi Álbum FIFA 2026 — ${pct}% completado`, `✅ ${gs.got} obtenidas | ❌ ${gs.missing} faltantes | 🔁 ${gs.extra} repetidas`, ''];
+    let lines = [
+      `🏆 *Mi Álbum FIFA 2026 — ${pct}% completado*`,
+      `✅ ${gs.got} obtenidas | ❌ ${gs.missing} faltantes | 🔁 ${gs.extra} repetidas`,
+      ''
+    ];
     for (const g of GROUPS) {
       let got=0,total=0;
       for (const cc of g.countries){const s=countryStats(cc.code);got+=s.got;total+=s.total;}
       lines.push(`Grupo ${g.id}: ${got}/${total}`);
     }
+    lines.push('');
+    lines.push(`📲 Armá tu álbum: ${PAGE_URL}`);
     const text = lines.join('\n');
-    navigator.clipboard?.writeText(text).then(() => {
-      showToast('¡Progreso copiado! 📋');
-      document.getElementById('share-modal').classList.add('hidden');
-    });
+    const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
+    document.getElementById('share-modal').classList.add('hidden');
   });
   document.getElementById('share-modal').addEventListener('click', (e) => {
     if (e.target === document.getElementById('share-modal'))
@@ -2620,15 +2678,25 @@ async function init() {
   await new Promise(r => setTimeout(r, 1600));
   document.getElementById('loading-screen').style.display = 'none';
 
-  // Verificar si Firebase Auth ya tiene sesión activa
-  // _onAuthReady se llama desde el módulo cuando cambia el estado
+  // Restaurar sesión guardada localmente (Google o código compartido)
+  const savedPw = localStorage.getItem('album2026_session_pw');
+  const savedUid = localStorage.getItem('album2026_session_uid');
+
+  // _onAuthReady se llama desde el módulo Firebase cuando cambia el estado de auth
   window._onAuthReady = async (user) => {
-    if (user && !albumPassword) {
-      // Sesión Google activa, restaurar álbum
+    if (albumPassword) return; // ya está logueado
+
+    if (user) {
+      // Sesión Google activa
       currentUser = user;
-      const uid = user.uid;
+      // Si el uid coincide con la sesión guardada, restaurar directamente
+      if (savedUid && user.uid === savedUid && savedPw) {
+        await enterAlbum(savedPw);
+        return;
+      }
+      // Si no, buscar en Firebase
       try {
-        const res = await fetch(`${FB_USERS}/${encodeURIComponent(uid)}`, {
+        const res = await fetch(`${FB_USERS}/${encodeURIComponent(user.uid)}`, {
           headers: { 'Content-Type': 'application/json' }
         });
         if (res.ok) {
@@ -2637,16 +2705,26 @@ async function init() {
           if (pw) { await enterAlbum(pw); return; }
         }
       } catch {}
+    } else if (savedPw && !savedUid) {
+      // Entró con código compartido (no Google) — restaurar directo
+      await enterAlbum(savedPw);
+      return;
     }
+
     if (!albumPassword) {
       document.getElementById('login-screen').classList.remove('hidden');
     }
   };
 
-  // Timeout: si Firebase tarda más de 2s, mostrar login igual
-  setTimeout(() => {
-    if (!albumPassword) document.getElementById('login-screen').classList.remove('hidden');
-  }, 2000);
+  // Timeout: si Firebase tarda más de 3s, intentar sesión guardada o mostrar login
+  setTimeout(async () => {
+    if (albumPassword) return;
+    if (savedPw) {
+      await enterAlbum(savedPw);
+    } else {
+      document.getElementById('login-screen').classList.remove('hidden');
+    }
+  }, 3000);
 
   // Manejar botón atrás del teléfono — cerrar panel/modal abierto, nunca ir a login
   window.addEventListener('popstate', (e) => {
@@ -2691,8 +2769,15 @@ function initShareAlbumSection() {
   // Copiar código de edición (en el share modal)
   document.getElementById('share-album-copy-btn').addEventListener('click', () => {
     const code = document.getElementById('share-album-code').textContent;
-    if (code && code !== 'Cargando...') {
-      navigator.clipboard?.writeText(code).then(() => showToast('¡Código copiado! 📋'));
+    if (code && code !== 'Cargando...' && code !== 'Error') {
+      const msg = `🏆 *Te invito a completar mi Álbum FIFA 2026 conmigo*
+
+Usá este código para entrar y editar juntos:
+*${code}*
+
+📲 Entrá acá: ${PAGE_URL}`;
+      const url = `https://wa.me/?text=${encodeURIComponent(msg)}`;
+      window.open(url, '_blank');
     }
   });
 }
