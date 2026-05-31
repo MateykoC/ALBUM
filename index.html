@@ -1806,7 +1806,9 @@ function shareRepetidas() {
   lines.push('_¿Querés alguna? ¡Hablame! 📲_');
   lines.push(`_Armá tu álbum: ${PAGE_URL}_`);
 
-  openWhatsApp(lines.join('\n'));
+  navigator.clipboard.writeText(lines.join('\n')).then(() => {
+    showToast('¡Repetidas copiadas! Pegalo donde quieras 📋');
+  });
 }
 
 function initStatsTabs() {
@@ -2567,16 +2569,20 @@ function initShare() {
     }
     lines.push('');
     lines.push(`📲 Armá tu álbum: ${PAGE_URL}`);
-    document.getElementById('share-modal').classList.add('hidden');
-    openWhatsApp(lines.join('\n'));
+    const text = lines.join('\n');
+    navigator.clipboard.writeText(text).then(() => {
+      showToast('¡Copiado! Pegalo donde quieras 📋');
+      document.getElementById('share-modal').classList.add('hidden');
+    });
   });
 
   document.getElementById('share-album-copy-btn').addEventListener('click', () => {
     const code = document.getElementById('share-album-code').textContent;
     if (code && code !== 'Cargando...' && code !== 'Error') {
-      const msg = `🏆 *Te invito a completar mi Álbum FIFA 2026 conmigo*\n\nUsá este código para entrar y editar juntos:\n*${code}*\n\n📲 Entrá acá: ${PAGE_URL}`;
-      document.getElementById('share-modal').classList.add('hidden');
-      openWhatsApp(msg);
+      const msg = `🏆 Te invito a completar mi Álbum FIFA 2026 conmigo\n\nUsá este código para entrar y editar juntos:\n${code}\n\n📲 Entrá acá: ${PAGE_URL}`;
+      navigator.clipboard.writeText(msg).then(() => {
+        showToast('¡Código copiado! Compartilo donde quieras 📋');
+      });
     }
   });
 
