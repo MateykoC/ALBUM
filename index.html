@@ -949,7 +949,7 @@ input { font-family: var(--font-body); }
           Compartí este código con alguien para que pueda editar este álbum con vos.
         </div>
         <div class="compare-code-box" id="share-album-code" style="font-size:18px;letter-spacing:4px;margin-bottom:10px;text-align:center">Cargando...</div>
-        <button class="share-modal-btn" id="share-album-copy-btn">📋 Copiar código de edición</button>
+        <button class="share-modal-btn" id="share-album-copy-btn" style="width:100%;text-align:center;display:block">📤 Compartir código por WhatsApp</button>
       </div>
 
     </div>
@@ -1307,6 +1307,7 @@ const FB_CONFIG = {
   projectId: "album-mundiall"
 };
 const FB_BASE = `https://firestore.googleapis.com/v1/projects/${FB_CONFIG.projectId}/databases/(default)/documents/albums`;
+const PAGE_URL = 'https://album-mundiall.netlify.app/';
 
 function fbDocUrl(pw, code) {
   return `${FB_BASE}/${encodeURIComponent(pw)}_${encodeURIComponent(code)}`;
