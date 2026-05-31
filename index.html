@@ -2504,15 +2504,17 @@ async function openShareModal() {
   document.getElementById('sc-footer').textContent = `📋 Álbum FIFA 2026 · ${gs.missing} faltantes · ${gs.extra} repetidas`;
   document.getElementById('share-modal').classList.remove('hidden');
 
-  // Mostrar sección "completar juntos" solo si es dueño (Google)
+  // Es dueño si tiene uid guardado O currentUser activo
+  const isOwner = !!(currentUser || localStorage.getItem('album2026_session_uid'));
   const juntosSection = document.getElementById('share-juntos-section');
-  juntosSection.style.display = currentUser ? 'block' : 'none';
+  juntosSection.style.display = isOwner ? 'block' : 'none';
 
-  // Cargar código de edición — siempre visible para quien lo tenga
+  // Cargar código de edición
   const shareCodeEl = document.getElementById('share-album-code');
   shareCodeEl.textContent = 'Cargando...';
-  if (currentUser) {
-    const shareCode = await getOrCreateShareCode(currentUser.uid, albumPassword);
+  const uid = currentUser?.uid || localStorage.getItem('album2026_session_uid');
+  if (uid) {
+    const shareCode = await getOrCreateShareCode(uid, albumPassword);
     shareCodeEl.textContent = shareCode || 'Error';
   } else {
     // Entró con código compartido — buscar el shareCode en Firebase por pw
