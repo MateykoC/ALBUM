@@ -949,7 +949,7 @@ input { font-family: var(--font-body); }
           Compartí este código con alguien para que pueda editar este álbum con vos.
         </div>
         <div class="compare-code-box" id="share-album-code" style="font-size:18px;letter-spacing:4px;margin-bottom:10px;text-align:center">Cargando...</div>
-        <button class="share-modal-btn" id="share-album-copy-btn" style="width:100%;text-align:center;display:block">📤 Compartir código por WhatsApp</button>
+        <button class="share-modal-btn" id="share-album-copy-btn" style="width:100%;text-align:center;display:block">📋 Copiar código</button>
       </div>
 
     </div>
@@ -2163,7 +2163,7 @@ async function enterAlbum(pw, isNew = false) {
 
   document.getElementById('login-screen').classList.add('hidden');
   document.getElementById('app').classList.remove('hidden');
-  document.getElementById('header-album-name').textContent = `Álbum: ${albumPassword}`;
+  document.getElementById('header-album-name').textContent = '';
   setSyncState('');
   renderGroups();
   updateGlobalProgress();
@@ -2703,17 +2703,17 @@ async function init() {
 
   // _onAuthReady se llama desde el módulo Firebase cuando cambia el estado de auth
   window._onAuthReady = async (user) => {
-    if (albumPassword) return; // ya está logueado
-
     if (user) {
-      // Sesión Google activa
+      // Firebase confirmó sesión Google — siempre setear currentUser
       currentUser = user;
-      // Si el uid coincide con la sesión guardada, restaurar directamente
+      if (albumPassword) return; // ya cargado por timeout, solo actualizar currentUser
+
+      // Restaurar álbum
       if (savedUid && user.uid === savedUid && savedPw) {
         await enterAlbum(savedPw);
         return;
       }
-      // Si no, buscar en Firebase
+      // Buscar en Firebase
       try {
         const res = await fetch(`${FB_USERS}/${encodeURIComponent(user.uid)}`, {
           headers: { 'Content-Type': 'application/json' }
@@ -2724,21 +2724,27 @@ async function init() {
           if (pw) { await enterAlbum(pw); return; }
         }
       } catch {}
-    } else if (savedPw && !savedUid) {
-      // Entró con código compartido (no Google) — restaurar directo
-      await enterAlbum(savedPw);
-      return;
-    }
-
-    if (!albumPassword) {
+    } else if (!albumPassword) {
+      // No hay sesión Google
+      if (savedPw && !savedUid) {
+        // Entró con código compartido — restaurar
+        await enterAlbum(savedPw);
+        return;
+      }
       document.getElementById('login-screen').classList.remove('hidden');
     }
   };
 
-  // Timeout: si Firebase tarda más de 3s, intentar sesión guardada o mostrar login
+  // Timeout: si Firebase tarda más de 3s, restaurar con datos locales
   setTimeout(async () => {
     if (albumPassword) return;
     if (savedPw) {
+      // Si hay uid guardado, es dueño Google — esperar un poco más a Firebase Auth
+      if (savedUid) {
+        await new Promise(r => setTimeout(r, 1500));
+        if (albumPassword) return;
+        // Firebase no respondió, entrar igual (currentUser quedará null hasta que responda)
+      }
       await enterAlbum(savedPw);
     } else {
       document.getElementById('login-screen').classList.remove('hidden');
